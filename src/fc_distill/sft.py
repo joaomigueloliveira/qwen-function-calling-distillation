@@ -35,6 +35,7 @@ from fc_distill.data import (
 from fc_distill.evaluate import read_run
 from fc_distill.scoring import lenient_match, parse_calls
 from fc_distill.tracking import (
+    GPU_HOURS,
     PEAK_GPU_MEM_GB,
     STUDENT_GPU_HOURS,
     TOKENS_PER_S,
@@ -104,7 +105,7 @@ def teacher_records(
     `lenient_only` is the filtered variant: it also drops calls that don't lenient-match gold
     (ADR 0005). The counts say how many rows each rule dropped."""
     records = []
-    counts = {"rows": len(rows), "kept": 0, "unparsed": 0, "not_lenient": 0}
+    counts = {"offered": len(rows), "kept": 0, "unparsed": 0, "not_lenient": 0}
     for ex in rows:
         calls = parse_calls(outputs[ex["id"]])
         if calls is None:
@@ -112,7 +113,11 @@ def teacher_records(
         elif lenient_only and not lenient_match(calls, ex["answers"], ex["tools"]):
             counts["not_lenient"] += 1
         else:
-            records.append(sft_record(ex, calls))
+            # Gold's shape and key order; extra keys the teacher wrote (`type`, `id`) go.
+            gold_shaped: list[Call] = [
+                {"name": c["name"], "arguments": c["arguments"]} for c in calls
+            ]
+            records.append(sft_record(ex, gold_shaped))
             counts["kept"] += 1
     return records, counts
 
@@ -234,31 +239,37 @@ def main() -> None:
 
     rows = load_split("train")
     teacher = None if args.teacher_run is None else load_teacher_run(args.teacher_run)
+    # Train rows the teacher run has no output for: none for a full run (ADR 0006).
+    unanswered = 0
     if teacher is not None:
-        rows = [ex for ex in rows if ex["id"] in teacher.outputs]
+        answered = [ex for ex in rows if ex["id"] in teacher.outputs]
+        rows, unanswered = answered, len(rows) - len(answered)
     if args.n_rows is not None:
         rows = random.Random(args.seed).sample(rows, args.n_rows)
+    lenient = args.filter == "lenient"
     data: dict[str, str | None]
     if teacher is None:
         method, data = "sft-gold", {"source": "gold"}
-        records, counts = [sft_record(ex) for ex in rows], {"rows": len(rows), "kept": len(rows)}
+        records, counts = [sft_record(ex) for ex in rows], {"offered": len(rows), "kept": len(rows)}
         teacher_hours = 0.0
     else:
-        method = "sft-teacher" + ("-lenient" if args.filter == "lenient" else "")
-        records, counts = teacher_records(rows, teacher.outputs, lenient_only=args.filter != "none")
+        # Filtered B is a variant of method B (GLOSSARY), not a method of its own.
+        method = "sft-teacher"
+        records, counts = teacher_records(rows, teacher.outputs, lenient_only=lenient)
+        counts = {"unanswered": unanswered} | counts
         data = {
             "source": "teacher",
             "teacher_run": str(args.teacher_run),
-            "teacher": teacher.model,
-            "teacher_revision": teacher.revision,
             "filter": args.filter,
         }
         # The generation this run's rows needed: all of it, unless --n-rows samples fewer.
         teacher_hours = teacher.gpu_hours * len(rows) / len(teacher.outputs)
+    print("train rows:", json.dumps(counts))
     # Everything a cost comparison varies is in the name, so two settings never share a run
     # directory (and so never resume each other's W&B run).
     variant = (
-        f"r{args.lora_r}-b{args.batch_size}x{args.grad_accum}-n{len(records)}"
+        ("lenient-" if lenient else "")
+        + f"r{args.lora_r}-b{args.batch_size}x{args.grad_accum}-n{len(records)}"
         + ("" if args.gradient_checkpointing else "-nogc")
         + ("-gl" if args.group_by_length else "")
     )
@@ -293,7 +304,10 @@ def main() -> None:
                 "data": data | {"split": "train", "n_rows": len(records), "rows": counts},
             },
             "provenance": train_provenance(
-                base=args.model, base_revision=hub_revision(args.model, args.revision)
+                base=args.model,
+                base_revision=hub_revision(args.model, args.revision),
+                teacher=None if teacher is None else teacher.model,
+                teacher_revision=None if teacher is None else teacher.revision,
             ),
         }
     )
@@ -368,7 +382,7 @@ def main() -> None:
         "cost": cost,
         # Method B's generation share; "cost" covers the training steps alone.
         "teacher_gpu_hours": teacher_hours,
-        "total_gpu_hours": cost["gpu_hours"] + teacher_hours,
+        "total_gpu_hours": clock.metrics()[GPU_HOURS],
     }
     (out / "cost.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))

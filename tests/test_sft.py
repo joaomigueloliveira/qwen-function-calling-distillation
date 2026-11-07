@@ -89,6 +89,17 @@ def test_teacher_record_prompts_like_gold_and_completes_with_the_teacher_calls_i
     ]
 
 
+def test_teacher_record_keeps_only_name_and_arguments_in_gold_key_order() -> None:
+    ex = make_example(1)
+    teacher = '[{"arguments": {"x": 3}, "name": "f", "type": "function"}, {"name": "f"}]'
+
+    [record], _ = teacher_records([ex], {1: teacher}, lenient_only=False)
+
+    assert record["completion"][0]["content"] == (
+        '[{"name": "f", "arguments": {"x": 3}}, {"name": "f", "arguments": {}}]'
+    )
+
+
 # Gold leaves out an optional argument; teacher outputs keyed by row id.
 _PARAMS = {"x": {"type": "int"}, "unit": {"type": "str, optional", "default": "km"}}
 _ROWS = [
@@ -115,7 +126,7 @@ def test_unfiltered_teacher_records_keep_wrong_calls_and_drop_what_does_not_pars
         '[{"name": "f", "arguments": {"x": 1, "unit": "km"}}]',
         '[{"name": "f", "arguments": {"x": 2}}]',
     ]
-    assert counts == {"rows": 4, "kept": 3, "unparsed": 1, "not_lenient": 0}
+    assert counts == {"offered": 4, "kept": 3, "unparsed": 1, "not_lenient": 0}
 
 
 def test_lenient_teacher_records_keep_only_calls_that_lenient_match_gold() -> None:
@@ -125,7 +136,7 @@ def test_lenient_teacher_records_keep_only_calls_that_lenient_match_gold() -> No
         '[{"name": "f", "arguments": {"x": 1}}]',
         '[{"name": "f", "arguments": {"x": 1, "unit": "km"}}]',
     ]
-    assert counts == {"rows": 4, "kept": 2, "unparsed": 1, "not_lenient": 1}
+    assert counts == {"offered": 4, "kept": 2, "unparsed": 1, "not_lenient": 1}
 
 
 def _write_teacher_run(run_dir: Path, split: str, outputs: dict[int, str]) -> None:
