@@ -691,7 +691,17 @@
       0.7336,
       0.7864
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.768,
+      "exact_ci": [
+       0.7408,
+       0.7931
+      ],
+      "agrees_with_teacher": 0.637,
+      "copies_teacher_errors": 34,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 1000,
@@ -743,7 +753,17 @@
       0.7647,
       0.8151
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.805,
+      "exact_ci": [
+       0.7793,
+       0.8284
+      ],
+      "agrees_with_teacher": 0.681,
+      "copies_teacher_errors": 32,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 2000,
@@ -764,7 +784,17 @@
       0.7751,
       0.8246
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.826,
+      "exact_ci": [
+       0.8013,
+       0.8482
+      ],
+      "agrees_with_teacher": 0.698,
+      "copies_teacher_errors": 32,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 2356,
@@ -785,7 +815,17 @@
       0.7751,
       0.8246
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.83,
+      "exact_ci": [
+       0.8055,
+       0.852
+      ],
+      "agrees_with_teacher": 0.701,
+      "copies_teacher_errors": 32,
+      "teacher_errors": 162
+     }
     }
    ],
    "selected": 1000,
@@ -1261,7 +1301,17 @@
       0.6852,
       0.7411
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.815,
+      "exact_ci": [
+       0.7897,
+       0.8378
+      ],
+      "agrees_with_teacher": 0.7,
+      "copies_teacher_errors": 47,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 1000,
@@ -1313,7 +1363,17 @@
       0.7398,
       0.7921
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.827,
+      "exact_ci": [
+       0.8023,
+       0.8492
+      ],
+      "agrees_with_teacher": 0.719,
+      "copies_teacher_errors": 42,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 2000,
@@ -1334,7 +1394,17 @@
       0.7326,
       0.7854
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.835,
+      "exact_ci": [
+       0.8107,
+       0.8567
+      ],
+      "agrees_with_teacher": 0.733,
+      "copies_teacher_errors": 48,
+      "teacher_errors": 162
+     }
     },
     {
      "step": 2356,
@@ -1355,7 +1425,17 @@
       0.7408,
       0.7931
      ],
-     "bfcl": null
+     "bfcl": {
+      "n": 1000,
+      "exact": 0.843,
+      "exact_ci": [
+       0.8191,
+       0.8642
+      ],
+      "agrees_with_teacher": 0.741,
+      "copies_teacher_errors": 46,
+      "teacher_errors": 162
+     }
     }
    ],
    "selected": 1000,

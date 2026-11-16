@@ -169,21 +169,28 @@ The Holm values move as claims are added: each new claim widens the family.
   had one (#85). The fence costs C rows: its training text never goes on after a fence, and 7 of its
   90 fenced answers open a call object but close a list, so they don't parse. C fails to parse 13
   test-clean answers to B's 6 (parse_ok 99.2 vs 99.6), and 10 of its 64 losses are those; on the
-  rows where both parse it is 49 vs 54 (p = 0.69). Its pick is also its worst-parsing checkpoint on
-  validation (98.3, the others 98.9 to 99.3). It costs more: the 2B's top-20 pass adds 1.56
+  rows where both parse it is 49 vs 54 (p = 0.69). Its pick also parses worse on validation than any
+  later checkpoint (98.3; steps 1000 to 3277: 98.9 to 99.3). It costs more: the 2B's top-20 pass adds 1.56
   GPU-hours to the 1.43 B pays for the teacher's answers, so its pick sits at 4.70 GPU-hours and no
   checkpoint falls within B's 3.12. It doesn't become a separate headline candidate: it ties B on
   test-clean at higher cost (ADR 0009).
-- **On clean rows, soft targets lift unseen tools robustly.** Filtered C is C's loss on filtered B's
-  37,696 rows (#88). Its selected step, 1000, beats filtered B on BFCL (84.1 vs 80.8, 64 vs 31,
-  Holm p = 0.02), also on the rows where both parse (62 vs 30, p = 0.001), and is level there with
-  A (84.5, p = 0.78) and the 2B (82.7, p = 0.28): the only robust soft-against-hard gain in the
-  project, and it needs labels to pick the rows. On test-clean it is not significantly different
-  from filtered B (84.9 vs 85.7, 70 vs 82, p = 0.37). Its fences cost it more than C's: 24 of its 47
-  fenced test-clean answers don't parse, it fails to parse 29 rows to filtered B's 3, and on the
-  rows where both parse it is ahead (69 vs 57, p = 0.33). It copies a few more of the 2B's BFCL
-  errors (42 vs 35 of 162). Its pick is again its worst-parsing checkpoint on validation (97.2,
-  the others 98.7 to 99.3). It costs 3.63 GPU-hours to filtered B's 2.50.
+- **On clean rows, soft targets learn unseen tools faster than hard ones, not better.** Filtered C
+  is C's loss on filtered B's 37,696 rows (#88). Its selected step, 1000, beats filtered B's, also
+  step 1000, on BFCL (84.1 vs 80.8, 64 vs 31, Holm p = 0.02; with both parsed 62 vs 30), mostly on
+  argument values and on parallel calls filtered B leaves short. That lead holds for the selected
+  checkpoints only: filtered B's BFCL keeps rising (83.0 at the end of its epoch, p = 0.03 against
+  step 1000), and end against end the two are not significantly different (84.3 vs 83.0, 52 vs 39,
+  p = 0.21), nor is filtered C's pick against filtered B's end (57 vs 46, p = 0.32; 3.63 vs 3.98
+  GPU-hours). This is explanation only, measured after the picks (#88), as for D in #70. On
+  test-clean filtered C is not significantly different from filtered B (84.9 vs 85.7, 70 vs 82,
+  p = 0.37; lenient 62 vs 80, p = 0.15; 137% of the gap, 78% of A's gain) and beats C (115 vs 76,
+  p = 0.006): the gold filter helps soft targets as it helps hard ones. On BFCL it is level with A
+  (84.5, p = 0.78) and the 2B (82.7, p = 0.28). Its layout costs it more than C's: 24 of its 47
+  fenced test-clean answers don't parse, 23 of them a fence never closed, so it fails to parse 29
+  rows to filtered B's 3; on the rows where both parse it is 69 vs 57 (p = 0.33). It writes
+  defaults out a little more than filtered B (51.2% of the 123 rows, filtered B 47.1%). Its pick is
+  its worst-parsing checkpoint on validation (97.2; the others 98.7 to 99.3), and none of its
+  checkpoints falls within filtered B's 2.50 GPU-hours: its first, at step 500, costs 3.09.
 
 B's, grounded B's, filtered B's, C's and filtered C's GPU-hours include the 1.43 h the teacher took
 to answer the train split, and C's also the 1.56 h of the 2B's top-20 scoring pass (#85), filtered
