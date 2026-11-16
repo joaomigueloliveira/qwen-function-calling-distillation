@@ -1,6 +1,6 @@
 # 0007. Label-free distillation is the main question; SFT on labels is the reference
 
-Date: 2026-11-08 · Status: accepted · Amended 2026-11-08 by ADR 0008 (D starts from the raw student); 2026-11-09 (filtered B before C; grounded B); 2026-11-13 by ADR 0010 (filtered C)
+Date: 2026-11-08 · Status: accepted · Amended 2026-11-08 by ADR 0008 (D starts from the raw student); 2026-11-09 (filtered B before C; grounded B); 2026-11-13 by ADR 0010 (filtered C); 2026-11-17 (E becomes a stretch goal)
 
 ## Context
 
@@ -43,6 +43,10 @@ than the student. That is the question worth answering here.
   the teacher's style).
 - **E, GRPO, counts as with labels**: its reward is checked against gold. It answers whether RL adds
   anything on top of SFT. Its start point and reward are settled at Phase 3.
+  Amended 2026-11-17: **E is a stretch goal after Phase 4.** The destination claim is about the best
+  label-free method, and E, with labels, fills none of its blanks (objective 3, KISS). Phase 3
+  closes with C and filtered C (#87, #88); the write-up comes first, and E is run, if at all, once
+  the repo tells the finished story.
 - **Grounded B is a label-free variant of B** (amended 2026-11-09, #74, from the external review
   on #2): it keeps the teacher outputs that pass the validity check below and whose every argument
   value is written in the query. The rule never reads gold, so it counts as label-free, and it is a
