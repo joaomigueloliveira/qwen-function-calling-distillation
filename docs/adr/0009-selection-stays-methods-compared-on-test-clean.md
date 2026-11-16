@@ -1,6 +1,6 @@
 # 0009. Checkpoint selection stays as is; methods are compared on test-clean, not picked on validation
 
-Date: 2026-11-10 · Status: accepted (#73)
+Date: 2026-11-10 · Status: accepted (#73) · Amended 2026-11-16: the headline method (#95)
 
 ## Context
 
@@ -69,3 +69,22 @@ fixed in advance (ADR 0006) was the only option not chosen with the outcome in v
 - Selection frequency stays an analysis on the review's branch; `fc-report` gains no bootstrap.
 - Phase 4's headline is a statement about which methods test-clean separates, with cost, rather than
   a single winner by number.
+
+## Amendment, 2026-11-16: which tied method is published (#95)
+
+Five label-free picks are not separated on test-clean after Holm: B 83.4 (3.12 GPU-h), D 83.3
+(13.54), grounded B 82.9 (3.02), C 82.5 (4.70), B then D 81.7 (4.77). Read literally, "the cheaper
+one is published" names grounded B, 0.1 GPU-h (3%) cheaper than B.
+
+- **Cost within 10% counts as the same cost**, and the simpler pipeline then breaks the tie. The
+  tie-break never reads a test score. Grounded B is B plus a filter, so **B is published, at its
+  ADR 0006 pick, step 1500**.
+- **This reading was chosen after the outcome was known.** Grounded B ran after this ADR was
+  accepted, and under the original wording it would be the published method. The README therefore
+  reports grounded B beside B.
+- **Lenient exact and BFCL stay readouts.** They don't choose the method. D leads B on BFCL
+  (Holm 0.009) and under lenient (p = 0.03, unadjusted), at 4.3× the GPU-hours; the README says so
+  next to the claim.
+- **The claim reads "past the teacher", not "z% of the gap".** Every label-free pick beats the 2B
+  on test-clean (B 83.4 against 76.8), so the gap recovered is over 100% (B 130%). Map #2's
+  Destination is amended to match.
