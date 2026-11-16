@@ -137,13 +137,14 @@ LABELS = {
     "D": "D",
     "B→D": "B then D",
 }
-# Hue is the method's family (A gray, B blue, C green, D orange); within a family each method has
-# its own shade and marker. Hollow markers and dashed lines mark the methods that used labels.
+# One hue per method, the same in every figure: the dataviz reference palette's categorical slots,
+# light and dark steps. Markers and dashes repeat the family (circle for the base method, square for
+# the filtered runs, triangle for the variants; hollow and dashed where labels were used), and every
+# line and row is named, so identity never rests on color alone. The four BFCL lines (blue, aqua,
+# yellow, red) are the palette's best four-hue set: colorblind separation 6.5 (legal with that
+# secondary encoding), normal-vision 13.0 in dark mode, under the 15 floor; the left cost panel's
+# three hues (blue, green, red) pass all-pairs in both modes.
 MARKERS = {"A": "D", "B": "o", "Bf": "s", "Bg": "^", "C": "o", "Cf": "s", "D": "o", "B→D": "^"}
-# The family hues are the dataviz reference palette's first three categorical slots, validated
-# all-pairs in both modes. The shades are steps of ±0.10-0.13 OKLCH lightness from them, each
-# family validated as an ordinal ramp; the filtered runs, drawn as lines, take the shade with more
-# contrast on the surface. Some sit under 3:1 on the light surface: every series is labelled.
 THEMES = {
     "light": {
         "surface": "#fcfcfb",
@@ -154,12 +155,12 @@ THEMES = {
         "axis": "#c3c2b7",
         "A": "#52514e",
         "B": "#2a78d6",
-        "Bf": "#0452a2",
-        "Bg": "#4b97f8",
-        "C": "#1baf7a",
-        "Cf": "#0d825a",
-        "D": "#eb6834",
-        "B→D": "#fd956f",
+        "Bf": "#1baf7a",
+        "Bg": "#e87ba4",
+        "C": "#008300",
+        "Cf": "#eda100",
+        "D": "#e34948",
+        "B→D": "#eb6834",
     },
     "dark": {
         "surface": "#1a1a19",
@@ -170,12 +171,12 @@ THEMES = {
         "axis": "#383835",
         "A": "#c3c2b7",
         "B": "#3987e5",
-        "Bf": "#77b1fc",
-        "Bg": "#1468c3",
-        "C": "#199e70",
-        "Cf": "#52c897",
-        "D": "#d95926",
-        "B→D": "#b0400f",
+        "Bf": "#199e70",
+        "Bg": "#d55181",
+        "C": "#0ca30c",
+        "Cf": "#c98500",
+        "D": "#e66767",
+        "B→D": "#d95926",
     },
 }
 
