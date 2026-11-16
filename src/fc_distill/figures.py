@@ -137,10 +137,13 @@ LABELS = {
     "D": "D",
     "B→D": "B then D",
 }
-# Hue is the method's family; hollow markers and dashed lines mark the methods that used labels.
-FAMILY = {"A": "A", "B": "B", "Bf": "B", "Bg": "B", "C": "C", "Cf": "C", "D": "D", "B→D": "D"}
-# The dataviz reference palette's first three categorical slots, validated all-pairs in both
-# modes, and its neutral tokens. Aqua is under 3:1 on the light surface: every series is labelled.
+# Hue is the method's family (A gray, B blue, C green, D orange); within a family each method has
+# its own shade and marker. Hollow markers and dashed lines mark the methods that used labels.
+MARKERS = {"A": "D", "B": "o", "Bf": "s", "Bg": "^", "C": "o", "Cf": "s", "D": "o", "B→D": "^"}
+# The family hues are the dataviz reference palette's first three categorical slots, validated
+# all-pairs in both modes. The shades are steps of ±0.10-0.13 OKLCH lightness from them, each
+# family validated as an ordinal ramp; the filtered runs, drawn as lines, take the shade with more
+# contrast on the surface. Some sit under 3:1 on the light surface: every series is labelled.
 THEMES = {
     "light": {
         "surface": "#fcfcfb",
@@ -151,8 +154,12 @@ THEMES = {
         "axis": "#c3c2b7",
         "A": "#52514e",
         "B": "#2a78d6",
-        "D": "#eb6834",
+        "Bf": "#0452a2",
+        "Bg": "#4b97f8",
         "C": "#1baf7a",
+        "Cf": "#0d825a",
+        "D": "#eb6834",
+        "B→D": "#fd956f",
     },
     "dark": {
         "surface": "#1a1a19",
@@ -163,8 +170,12 @@ THEMES = {
         "axis": "#383835",
         "A": "#c3c2b7",
         "B": "#3987e5",
-        "D": "#d95926",
+        "Bf": "#77b1fc",
+        "Bg": "#1468c3",
         "C": "#199e70",
+        "Cf": "#52c897",
+        "D": "#d95926",
+        "B→D": "#b0400f",
     },
 }
 
@@ -250,7 +261,7 @@ def _line(
     rows: Rows,
     place: tuple[str, float] = ("end", 0),
 ) -> None:
-    color = t[FAMILY[key]]
+    color = t[key]
     xs = [r["gpu_hours"] for r in rows]
     ys = [100 * r["exact"] for r in rows]
     ax.plot(
@@ -259,7 +270,7 @@ def _line(
         color=color,
         linewidth=2,
         linestyle=(0, (5, 3)) if labels else "-",
-        marker="o",
+        marker=MARKERS[key],
         markersize=4.5,
         markerfacecolor=t["surface"] if labels else color,
         markeredgecolor=color,
@@ -314,13 +325,13 @@ def _cost_accuracy_figure(fig_data: Mapping[str, Rows], t: Mapping[str, str]) ->
 
     picks = sorted(fig_data["picks"], key=lambda r: r["exact"])
     for i, r in enumerate(picks):
-        color = t[FAMILY[r["method"]]]
+        color = t[r["method"]]
         lo, hi = (100 * v for v in r["ci"])
         right.plot([lo, hi], [i, i], color=color, linewidth=2, solid_capstyle="round")
         right.plot(
             100 * r["exact"],
             i,
-            "o",
+            MARKERS[r["method"]],
             markersize=7,
             color=color,
             markeredgecolor=color,
@@ -388,7 +399,7 @@ def _readouts_figure(rows: Rows, t: Mapping[str, str]) -> Any:
     for ax, (field, title) in zip(axes, panels, strict=True):
         _style(ax, t)
         values = [100 * r[field] if r[field] is not None else 0.0 for r in rows]
-        ax.barh(ys, values, height=0.62, color=t["B"])
+        ax.barh(ys, values, height=0.62, color=[t.get(r["model"], t["muted"]) for r in rows])
         for y, r, v in zip(ys, rows, values, strict=True):
             text = "n/a" if r[field] is None else f"{v:.1f}"
             ax.annotate(
