@@ -90,9 +90,9 @@ The Holm values move as claims are added: each new claim widens the family.
   1,210 that parse after the same repair match gold only 34 times. It isn't memorisation either: no
   test-clean query appears in train (9 do if punctuation is ignored; 237 share a template with other
   values), and B's lead is larger on the 109 rows whose tool set train never saw (83.5 vs 68.8).
-- **On tools it never trained on, it doesn't.** B gains 14.6 points on BFCL over the raw 0.8B but
-  stays below the 2B (54 vs 90, p = 0.003), though not after Holm (0.051) since C's claims joined
-  the family. Its format holds (parse_ok 98.8 vs 98.9); it loses
+- **On tools it never trained on, it doesn't beat the 2B, and trails it, though not robustly.** B
+  gains 14.6 points on BFCL over the raw 0.8B but stays below the 2B (54 vs 90, p = 0.003), though
+  not after Holm (0.051) since C's claims joined the family. Its format holds (parse_ok 98.8 vs 98.9); it loses
   on argument values, in every BFCL category.
 - **On xLAM, D and B are not significantly different under strict exact; they differ in kind.** On
   test-clean D scores 83.3 and B 83.4 (60 vs 62 rows, p = 0.93): 129% of the gap to the 2B, 74% of
@@ -156,20 +156,26 @@ The Holm values move as claims are added: each new claim widens the family.
 - **Soft targets don't beat hard ones on xLAM; on unseen tools C leads B, not robustly.** C trains on
   B's own 52,424 rows and text, with the 2B's top-20 log-probs at every token instead of the one
   token it wrote (forward KL, ADR 0010, #87). Its selected step, 1500, is not significantly different
-  from B on test-clean (82.5 vs 83.4, 50 vs 64, p = 0.22; 126% of the gap, 72% of A's gain) or under
-  lenient (47 vs 55, p = 0.49). On BFCL it leads B's selected checkpoint (81.6 vs 79.1, 54 vs 29,
-  p = 0.008), but not after Holm (0.10), and B's own BFCL reaches 81.1 by the end of its epoch
-  (#70). As with D, it agrees with the 2B more (74.7% of BFCL rows,
-  B 71.7%) without copying its errors more (63 vs 64 of 162). The soft targets carry the 2B's habits
-  where it hedges: C writes fewer defaults out (37.4% on the 123 rows that turn on it, B 42.3%, the
-  2B 20.3%) and fences 5.5% of its test-clean answers in ``` (B 0%, the 2B 3.6%), which fc-eval
-  parses all the same. It costs more: the teacher's top-20 pass adds 1.56 GPU-hours to the 1.43 B
-  pays for the teacher's answers, so its pick sits at 4.70 GPU-hours and no checkpoint falls within
-  B's 3.12. It doesn't become a separate headline candidate: it ties B on test-clean at higher cost
-  (ADR 0009).
+  from B on test-clean (82.5 vs 83.4, 50 vs 64, p = 0.22; 126% of the gap, 72% of A's gain), under
+  lenient (47 vs 55, p = 0.49), or from D (p = 0.32). On BFCL it leads B's selected checkpoint (81.6
+  vs 79.1, 54 vs 29, p = 0.008), but not after Holm (0.10), B's own BFCL reaches 81.1 by the end of
+  its epoch (#70), and C's BFCL along its own run wasn't measured; it is level with the 2B (82.7,
+  55 vs 66, p = 0.36). It copies the 2B's BFCL errors no more than B (63 vs 64 of 162); it agrees
+  with the 2B more (74.7% vs 71.7%), as accuracy alone would make it, as with D.
+  The soft targets carry the 2B's habits where it hedges. C writes fewer defaults out (37.4% on the
+  123 rows that turn on it, B 42.3%, the 2B 20.3%), and it fences 5.5% of its test-clean answers in
+  ``` (B 0%, the 2B 3.6%), a habit B's re-serialized targets drop on the 6,617 rows where the 2B
+  had one (#85). The fence costs C rows: its training text never goes on after a fence, and 7 of its
+  90 fenced answers open a call object but close a list, so they don't parse. C fails to parse 13
+  test-clean answers to B's 6 (parse_ok 99.2 vs 99.6), and 10 of its 64 losses are those; on the
+  rows where both parse it is 49 vs 54 (p = 0.69). Its pick is also its worst-parsing checkpoint on
+  validation (98.3, the others 98.9 to 99.3). It costs more: the 2B's top-20 pass adds 1.56
+  GPU-hours to the 1.43 B pays for the teacher's answers, so its pick sits at 4.70 GPU-hours and no
+  checkpoint falls within B's 3.12. It doesn't become a separate headline candidate: it ties B on
+  test-clean at higher cost (ADR 0009).
 
-B's, grounded B's and filtered B's GPU-hours include the 1.43 h the teacher took to answer the train split; C's
-add the 1.56 h of its top-20 scoring pass (#85); D's
+B's, grounded B's, filtered B's and C's GPU-hours include the 1.43 h the teacher took to answer the
+train split, and C's also the 1.56 h of the 2B's top-20 scoring pass (#85); D's
 include its own sampling and the teacher's grading, inside every step; B then D's include B's.
 Checkpoints are each run's best on validation (ADR 0006); the pick within a run is noisy, so a claim
 that rests on it names the checkpoint (ADR 0009). Next: filtered C, C's loss on filtered B's rows (#88).

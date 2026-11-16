@@ -207,6 +207,33 @@ def test_a_method_selected_within_bs_budget_gets_no_second_entry_at_it(
     assert "Bg" not in data["at_b_budget"]
 
 
+def test_a_method_with_no_checkpoint_within_bs_budget_is_named_as_such(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    splits = tmp_path / "splits.json"
+    splits.write_text(json.dumps({"test-clean": [0, 1, 2, 3]}))
+    val = range(10)
+    _write_run(tmp_path / "eval-validation-Qwen_Qwen3.5-0.8B", _rows(val, {0}), {})
+    _write_run(tmp_path / "eval-validation-Qwen_Qwen3.5-2B", _rows(val, set(range(5))), {})
+    by_key = {m.key: m for m in METHODS}
+    # C's teacher passes alone cost more than B's whole pick: its first checkpoint is past it.
+    runs = {"B": {1000: (3.1, 7)}, "C": {500: (3.6, 6), 1000: (4.1, 7)}}
+    for key, checkpoints in runs.items():
+        for step, (hours, k) in checkpoints.items():
+            _write_run(
+                tmp_path / f"eval-validation-{by_key[key].train_run}-checkpoint-{step}",
+                _rows(val, set(range(k))),
+                {"adapter": {"gpu_hours": hours}},
+            )
+    monkeypatch.setattr(methods, "load_split", lambda split, path: [])
+
+    data = build(tmp_path, splits)
+
+    assert "C" not in data["at_b_budget"]
+    assert data["over_b_budget"] == ["C"]
+    assert "No checkpoint of C falls within it." in render(data)
+
+
 def test_a_pipeline_counts_the_gpu_hours_of_the_checkpoint_it_continues(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
