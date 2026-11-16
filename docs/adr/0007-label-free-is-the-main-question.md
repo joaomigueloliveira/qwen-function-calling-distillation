@@ -1,6 +1,6 @@
 # 0007. Label-free distillation is the main question; SFT on labels is the reference
 
-Date: 2026-11-08 · Status: accepted · Amended 2026-11-08 by ADR 0008 (D starts from the raw student); 2026-11-09 (filtered B before C; grounded B); 2026-11-13 by ADR 0010 (filtered C); 2026-11-17 (E becomes a stretch goal)
+Date: 2026-11-08 · Status: accepted · Amended 2026-11-08 by ADR 0008 (D starts from the raw student); 2026-11-09 (filtered B before C; grounded B); 2026-11-13 by ADR 0010 (filtered C); 2026-11-16 (E becomes a stretch goal); 2026-11-16 by ADR 0009 (the claim reads "past the teacher")
 
 ## Context
 
@@ -42,8 +42,8 @@ than the student. That is the question worth answering here.
   run: filtered B − B is what the teacher's mistakes cost, A − filtered B is what is left (fewer rows,
   the teacher's style).
 - **E, GRPO, counts as with labels**: its reward is checked against gold. It answers whether RL adds
-  anything on top of SFT. Its start point and reward are settled at Phase 3.
-  Amended 2026-11-17: **E is a stretch goal after Phase 4.** The destination claim is about the best
+  anything on top of SFT. Its start point and reward are settled if it runs.
+  Amended 2026-11-16: **E is a stretch goal after Phase 4.** The destination claim is about the best
   label-free method, and E, with labels, fills none of its blanks (objective 3, KISS). Phase 3
   closes with C and filtered C (#87, #88); the write-up comes first, and E is run, if at all, once
   the repo tells the finished story.
@@ -64,6 +64,10 @@ than the student. That is the question worth answering here.
 - **share of A's gain**, (method − raw student) / (A − raw student): how much of what labels buy is
   reached without them.
 
+Amended 2026-11-16 (ADR 0009, #95): every label-free pick beats the 2B on `test-clean` (B 83.4
+against 76.8), so its gap recovered is over 100% (B 130%). The README states "past the teacher's
+76.8%" instead; both numbers stay in `results/methods.md`.
+
 Every result is shown next to the baselines and A.
 
 ## Considered options
@@ -82,4 +86,4 @@ Every result is shown next to the baselines and A.
   labelled test, as in practice, where a small labelled eval set is the norm.
 - The teacher is a 2B. With a stronger teacher the label-free numbers would likely be higher; the
   results are about this pair (ADR 0004).
-- C needs a teacher pass that stores top-k probabilities and a KL loss in `fc-sft` (ADR 0010).
+- C uses a stored pass of the teacher's top-k probabilities and a KL loss in `fc-sft` (ADR 0010).

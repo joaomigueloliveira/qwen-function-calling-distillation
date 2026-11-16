@@ -34,7 +34,7 @@ UNSOUND: frozenset[Verdict] = frozenset({"label_ambiguous", "label_wrong"})
 
 DEFAULT_LABELS_PATH = Path("data/audit/test_labels.csv")
 DEFAULT_REVIEW_PATH = Path("data/audit/review.csv")
-DEFAULT_SHEET_PATH = Path("results/label-audit-review.md")
+DEFAULT_SHEET_PATH = Path("docs/notes/label-audit-review.md")
 REVIEW_SIZE = 30
 DEFAULT_MODELS = ("Qwen/Qwen3.5-0.8B", "Qwen/Qwen3.5-2B", "Qwen/Qwen3.5-4B")
 FIELDS = ("id", "verdict", "category", "reason", "models_wrong", "tags")
@@ -214,7 +214,7 @@ def review_sheet(
     out = [
         "# Label audit: blind review sheet",
         "",
-        "Relabel each row against [the rubric](../docs/label-audit.md) and write the verdict "
+        "Relabel each row against [the rubric](../label-audit.md) and write the verdict "
         "(`label_sound`, `label_ambiguous` or `label_wrong`) into `data/audit/review.csv`. "
         "Then run `uv run fc-audit build`, which reports the disagreements.",
     ]

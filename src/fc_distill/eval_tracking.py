@@ -9,7 +9,7 @@ values within a run. Each eval's scores are flat summary keys, with W&B-safe nam
     bfcl/slice/<bucket>/..., bfcl/category/<cat>/...
 
 and every slice, with all its metrics and intervals, is one row of a `slices` table. The full
-schema, and what trainers log: docs/wandb-dashboard.md.
+schema, and what trainers log: docs/notes/wandb-dashboard.md.
 """
 
 import re

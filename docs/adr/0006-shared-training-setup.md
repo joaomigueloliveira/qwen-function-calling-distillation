@@ -66,4 +66,5 @@ every method pays about the same.
 
 - Results are conditional on one untuned config and one seed. The README lists both as limitations.
 - A method that is sensitive to the learning rate may look worse than it is.
-- Methods D and E reuse the LoRA config. Their own settings are decided at Phase 3's start.
+- C and D reuse the LoRA config, with their own settings in ADR 0010 and ADR 0008. E, a stretch goal
+  (ADR 0007), would too.
