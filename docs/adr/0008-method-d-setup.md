@@ -53,7 +53,8 @@ chunk so neither model's full logits are ever held at once.
   `fc-eval`'s by a few rows.
 - **B→D**, continuing B's adapter with D's loss for one epoch, is a **pipeline**, reported as
   "B then D", not as method D. It becomes the next run if D doesn't beat B on validation; otherwise
-  it stays a stretch goal. D didn't, so it ran (#58; Consequences). This amends ADR 0007, where D started from B.
+  it stays a stretch goal. D didn't, so it ran (#58; see Consequences). This amends ADR 0007, where
+  D started from B.
 
 ## Considered options
 

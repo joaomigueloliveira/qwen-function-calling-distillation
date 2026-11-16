@@ -101,5 +101,5 @@ random order can drop the flag at a cost of 1.6× in GPU-hours.
   ([W&B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/1680g270)).
 - First full method A epoch, with the chosen setting
   ([W&B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw)):
-  2,235 tokens/s and a 4.62 GiB peak at step 50. The epoch cost 3.84 GPU-hours, against the 3.9
+  2,235 tokens/s and a 4.62 GiB peak at step 50. The epoch cost 3.83 GPU-hours, against the 3.9
   forecast above; its results are in [`methods.md`](methods.md).

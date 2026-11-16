@@ -83,8 +83,8 @@ A label-free method's best validation checkpoint within B's GPU-hours, scored li
 checkpoint (ADR 0008).
 
 **Headline method**:
-The label-free method the README's claim names: B, the simplest of the methods test-clean can't
-separate (ADR 0009).
+The label-free method the README's claim names, chosen by ADR 0009's rule among the methods
+test-clean can't separate.
 
 **Readout**:
 A measurement reported to explain a result and never used to choose: BFCL along a run, agreement
@@ -158,6 +158,14 @@ The share of test rows with a sound label: the best strict exact score an always
 reach on test.
 
 ## Scoring
+
+**McNemar test**:
+The paired test used to compare two models: it counts only the rows where exactly one of them is
+right.
+
+**Holm**:
+The adjustment applied to the p-values of all the README's claims together, so that testing many
+claims doesn't make one look significant by chance.
 
 **BFCL**:
 1,000 single-turn rows of the Berkeley Function-Calling Leaderboard, with tools the student never

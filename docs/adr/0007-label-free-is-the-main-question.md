@@ -64,9 +64,8 @@ than the student. That is the question worth answering here.
 - **share of A's gain**, (method − raw student) / (A − raw student): how much of what labels buy is
   reached without them.
 
-Amended 2026-11-16 (ADR 0009, #95): every label-free pick beats the 2B on `test-clean` (B 83.4
-against 76.8), so its gap recovered is over 100% (B 130%). The README states "past the teacher's
-76.8%" instead; both numbers stay in `results/methods.md`.
+Amended 2026-11-16 (ADR 0009's amendment, #95): the claim reads "past the teacher's 76.8%" rather
+than a gap recovered over 100%; both headline numbers stay in `results/methods.md`.
 
 Every result is shown next to the baselines and A.
 

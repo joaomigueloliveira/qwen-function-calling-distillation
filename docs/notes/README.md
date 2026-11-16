@@ -8,4 +8,3 @@ Long notes behind decisions, kept for the record. The decisions themselves are i
 | [`wandb.md`](wandb.md) | How W&B behaves for this project: SDK, `define_metric`, resuming, artifacts, Forge |
 | [`wandb-dashboard.md`](wandb-dashboard.md) | The key schema, what each trainer logs, and dashboard-as-code findings |
 | [`label-audit-review.md`](label-audit-review.md) | The blind review sheet of the test label audit (written by `fc-audit review`) |
-| [`student-beats-teacher.md`](student-beats-teacher.md) | Why B beats the 2B on test-clean: a quarter format, the rest mostly unmeasured |

@@ -138,9 +138,8 @@ def _starting_line(models: Mapping[str, Any]) -> list[str]:
         f"On test-clean the student scores **{100 * s:.1f}** and the teacher **{100 * t:.1f}**: "
         f"a gap of **{100 * gap:.1f} points**. #2's success criterion is to recover at least half "
         f"of it, a distilled 0.8B at **{100 * (s + gap / 2):.1f}** or better on test-clean, with "
-        "the recovered fraction significant at p < 0.05. How that is tested (a paired interval on "
-        "the recovered fraction, and against which student baseline) is settled in the Phase 2 "
-        "design review.",
+        "the recovered fraction significant at p < 0.05. #35 settled the test: the point estimate, "
+        "with a paired McNemar test against the raw 0.8B.",
     ]
 
 

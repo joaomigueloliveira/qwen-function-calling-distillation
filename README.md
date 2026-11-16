@@ -171,7 +171,7 @@ The Holm values move as claims are added: each new claim widens the family.
   dropped 91% of B's training rows of that kind. Its epoch is shorter too (2,120 steps vs 3,277), and
   each is one seed. It doesn't become a separate headline candidate: it ties B at the same cost
   (3.02 vs 3.12 GPU-hours) and trails it under lenient, so B stays the label-free reference, and
-  Phase 4 chooses among the methods test-clean can't separate (ADR 0009).
+  the headline method among the methods test-clean can't separate (ADR 0009).
 - **Soft targets don't beat hard ones on xLAM; on unseen tools C leads B, not robustly.** C trains on
   B's own 52,424 rows and text, with the 2B's top-20 log-probs at every token instead of the one
   token it wrote (forward KL, ADR 0010, #87). Its selected step, 1500, is not significantly different
