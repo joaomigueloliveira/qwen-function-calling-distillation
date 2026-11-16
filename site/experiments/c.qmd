@@ -5,6 +5,12 @@ subtitle: "The same text as B, with the teacher's probabilities"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** Soft targets add little where the teacher is sure: C ties B on test-clean
+(**`{python} story.score("C")`** against `{python} story.score("B")`), and leads it on unseen tools
+only before correcting for the number of claims.
+:::
+
 **Question.** Does the teacher's whole distribution teach more than the one token it wrote?
 ([Hard and soft targets](../concepts/targets.qmd).)
 
@@ -13,11 +19,9 @@ tokens at every answer position; the student is trained with the forward KL over
 entry for the rest, at temperature 1, with no hard-target term. So C − B isolates soft against hard
 targets on identical text.
 
-::: {.facts}
 ```{python}
 table(["C", "B"])
 ```
-:::
 
 ```{ojs}
 runs = ["C"]

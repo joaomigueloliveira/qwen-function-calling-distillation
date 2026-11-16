@@ -2,9 +2,10 @@
 import csv
 import json
 
-from IPython.display import Markdown
+from IPython.display import HTML, Markdown
 
-from fc_distill.story import ROOT, Story
+from fc_distill.figures import LABELS
+from fc_distill.story import HEADLINE, ROOT, Story
 
 story = Story.load()
 M = story.methods
@@ -43,17 +44,41 @@ def wandb(key: str) -> Markdown:
     return Markdown(f"[W&B]({story.facts(key)['wandb']})")
 
 
-def table(keys: list[str]) -> Markdown:
-    head = "| Method | Uses labels | Step | GPU-hours | Validation | Test | Test-clean | BFCL |\n"
-    head += "|---|---|---:|---:|---:|---:|---:|---:|\n"
+def badge_html(key: str, title: str = "") -> str:
+    css = {"B→D": "BD"}.get(key, key)
+    tip = f' title="{title}"' if title else ""
+    return f'<span class="m m-{css}"{tip}>{LABELS[key]}</span>'
+
+
+def badge(key: str) -> Markdown:
+    """A method's name as a badge in its chart colour, for prose."""
+    return Markdown(badge_html(key))
+
+
+def table(keys: list[str], baselines: bool = False) -> HTML:
+    """The results table for `keys`, each at its selected checkpoint; baselines on top if asked."""
+    cols = ["Validation", "Test", "Test-clean", "BFCL"]
+    head = "".join(f"<th>{c}</th>" for c in ["Method", "Labels", "Step", "GPU-h", *cols])
     rows = []
+    if baselines:
+        for who, what in (("raw 0.8B", "the student, untrained"), ("raw 2B", "the teacher")):
+            scores = [story.score(who, s) for s in ("validation", "test", "test-clean", "bfcl")]
+            cells = [f'<span title="{what}">{who}</span>', "", "", "0", *scores]
+            rows.append('<tr class="baseline">' + _cells(cells) + "</tr>")
     for k in keys:
         f = story.facts(k)
-        rows.append(
-            f"| **{k}**, {f['name']} | {f['labels']} | {f['step']} | {f['gpu_hours']} | "
-            f"{f['validation']} | {f['test']} | {f['test_clean']} | {f['bfcl']} |"
-        )
-    return Markdown(head + "\n".join(rows))
+        cells = [badge_html(k, f["name"]), f["labels"], f["step"], f["gpu_hours"],
+                 f["validation"], f["test"], f["test_clean"], f["bfcl"]]
+        cls = ' class="headline"' if k == HEADLINE else ""
+        rows.append(f"<tr{cls}>" + _cells(cells) + "</tr>")
+    return HTML(
+        f'<div class="table-scroll"><table class="results"><thead><tr>{head}</tr></thead>'
+        f"<tbody>{''.join(rows)}</tbody></table></div>"
+    )
+
+
+def _cells(cells: list[str]) -> str:
+    return "".join(f"<td>{c}</td>" for c in cells)
 ```
 
 ```{ojs}

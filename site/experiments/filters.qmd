@@ -5,6 +5,12 @@ subtitle: "Filtered B, grounded B and filtered C"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** Keeping only the teacher's answers that match gold gains about two points
+(**`{python} story.score("Bf")`**), not robustly; the label-free filter doesn't
+(`{python} story.score("Bg")`, a tie with B).
+:::
+
 **Question.** The teacher is often wrong. What does training only on its better answers buy, and can
 the better answers be found without labels?
 
@@ -18,11 +24,9 @@ the better answers be found without labels?
   time, against `{python} pct(teacher["variants"]["unfiltered"]["lenient"])` for all of B's data.
 - **Filtered C** is C's soft targets on filtered B's rows.
 
-::: {.facts}
 ```{python}
 table(["Bf", "Bg", "Cf", "B"])
 ```
-:::
 
 ```{ojs}
 runs = ["Bf", "Bg", "Cf"]

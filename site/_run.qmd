@@ -4,8 +4,8 @@ runPlots = {
   const [cost, bfcl] = runData;
   const keys = [...runs, ...(runs.includes("B") ? [] : ["B"])];
   const along = (rows, label, domain) => Plot.plot({
-    width: Math.min(width, 380), height: 260, marginRight: 70, style: {fontSize: "12px"},
-    x: {label: "GPU-hours →"}, y: {label: label, domain, grid: true},
+    width: Math.min(width, 420), height: 280, marginRight: 70, marginBottom: 42, style: {fontSize: "12px"},
+    x: {label: "GPU-hours →", labelAnchor: "center", labelOffset: 34}, y: {label: label, domain, grid: true},
     marks: [
       Plot.line(rows, {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method],
         strokeWidth: d => runs.includes(d.method) ? 2.5 : 1, strokeOpacity: d => runs.includes(d.method) ? 1 : 0.45}),

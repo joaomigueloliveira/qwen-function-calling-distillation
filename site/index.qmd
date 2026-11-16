@@ -1,7 +1,6 @@
 ---
 title: "Distilling function calling without labels"
 subtitle: "Qwen3.5-2B → Qwen3.5-0.8B on xLAM-60k, on one 12 GB GPU"
-author: "João Oliveira"
 toc: false
 ---
 
@@ -12,6 +11,15 @@ toc: false
 ::: {.claim}
 Trained only on a 2B model's answers, a 0.8B model calls tools better than its teacher, in
 `{python} h["gpu_hours"]` GPU-hours on one consumer GPU.
+:::
+
+::: {.what}
+A study by João Oliveira: a test-set label audit, four ways of distilling a model and three
+filters, paired statistical tests, and a serving benchmark, all on one RTX 3060.
+:::
+
+::: {.cta}
+[Read the story](story.qmd) [See every result](results.qmd){.secondary}
 :::
 :::
 
@@ -43,20 +51,20 @@ Trained only on a 2B model's answers, a 0.8B model calls tools better than its t
 
 {{< include _cost.qmd >}}
 
-## Explore
+## Explore the project
 
 ::: {.sections}
-[**The story** · the question, the methods and what we found, start to finish](story.qmd)
+[**The story** the question, the methods and what we found, start to finish](story.qmd)
 
-[**Concepts** · what distillation is: hard and soft targets, off-policy and on-policy](concepts/distillation.qmd)
+[**Concepts** what distillation is: hard and soft targets, off-policy and on-policy](concepts/distillation.qmd)
 
-[**Data** · xLAM-60k, the label audit behind test-clean, and BFCL for unseen tools](data/xlam.qmd)
+[**Data** xLAM-60k, the label audit behind test-clean, and BFCL for unseen tools](data/xlam.qmd)
 
-[**Evaluation** · the metrics, why each exists, and how methods are compared](evaluation/metrics.qmd)
+[**Evaluation** the metrics, why each exists, and how methods are compared](evaluation/metrics.qmd)
 
-[**Experiments** · one page per method: setup, result, and what it shows](experiments/b.qmd)
+[**Experiments** one page per method: setup, result, and what it shows](experiments/b.qmd)
 
-[**Results** · every method side by side, serving and the model](results.qmd)
+[**Results** every method side by side, serving and the model](results.qmd)
 
-[**Decisions** · every design decision, with the options it weighed](decisions/index.qmd)
+[**Decisions** every design decision, with the options it weighed](decisions/index.qmd)
 :::

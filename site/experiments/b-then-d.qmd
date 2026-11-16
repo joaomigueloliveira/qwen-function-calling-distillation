@@ -5,6 +5,11 @@ subtitle: "On-policy distillation on top of B"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** D's loss on top of B doesn't help: **`{python} story.score("B→D")`** on test-clean,
+against B's `{python} story.score("B")`.
+:::
+
 **Question.** Thinking Machines start on-policy distillation from a fine-tuned checkpoint. Does D's
 loss improve B, rather than replace it?
 
@@ -13,11 +18,9 @@ the cosine schedule over a full epoch but stopped at step 1,000; checkpoints at 
 at 1,000, to see whether it gains fast. Reported as a pipeline,
 not as method D.
 
-::: {.facts}
 ```{python}
 table(["B→D", "B"])
 ```
-:::
 
 ```{ojs}
 runs = ["B→D"]

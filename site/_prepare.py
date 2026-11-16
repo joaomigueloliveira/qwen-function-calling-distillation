@@ -46,13 +46,18 @@ def main() -> None:
     for f in files:
         text, title = page(f.read_text(), slugs)
         (OUT / f"{f.stem}.qmd").write_text(text)
-        status = f.read_text().splitlines()[2]
-        rows.append(f"| [{title}]({f.stem}.html) | {status} |")
+        line = f.read_text().splitlines()[2]
+        date = re.search(r"Date: ([\d-]+)", line)
+        state = re.search(r"Status: (\w+)", line)
+        amended = re.findall(r"(\d{4}-\d{2}-\d{2})", line.split("Status:", 1)[-1])
+        badge = f'<span class="status">{state[1] if state else "?"}</span>'
+        when = f'<span class="amended">amended {max(amended)}</span>' if amended else ""
+        rows.append(f"| [{title}]({f.stem}.html) | {date[1] if date else ''} | {badge} {when} |")
     (OUT / "index.qmd").write_text(
         "---\ntitle: Decisions\n---\n\nEvery decision that shaped the experiments, with the "
         "options it weighed, as recorded in the repository's "
         f"[docs/adr]({REPO}/tree/main/docs/adr). Rendered here as written.\n\n"
-        "| Decision | Date and status |\n|---|---|\n" + "\n".join(rows) + "\n"
+        "| Decision | Date | Status |\n|---|---|---|\n" + "\n".join(rows) + "\n"
     )
 
 

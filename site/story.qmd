@@ -55,27 +55,21 @@ The split, the audit and the train filters:
 
 ## Measuring it
 
-An answer scores when its calls equal gold's, in any order: **strict exact match**, with no model
-as judge. Many xLAM tools have optional arguments, and gold sometimes writes them out at their
-default; **lenient exact** ignores those, and is reported beside strict.
+No model judges another; every score is computed by rule:
 
-Every summary also breaks the scores down by slice: call pattern, distractor tools, and whether
-every value is written in the query.
-
-xLAM's test rows call tools the student saw in training, with new values. To see whether a method
-learned tool calling or xLAM's tools, every selected checkpoint is also run on
-`{python} n(M["baselines"]["official"]["raw 0.8B"]["bfcl"]["n"])` rows of
-[BFCL](https://gorilla.cs.berkeley.edu/leaderboard.html), the Berkeley Function-Calling
-Leaderboard, whose tools never appear in train.
-
-Two models are compared on the same rows with a paired **McNemar test**, which counts only the rows
-exactly one of them gets right. Every claim below carries its **Holm**-adjusted p-value over all
-`{python} len(M["claims"])` claims tested, so testing many doesn't make one look significant by
-chance.
+- **Strict exact match**, the headline: the answer's calls equal gold's, in any order.
+- **Lenient exact**, beside it: the same, but ignoring optional arguments at their default, which
+  gold writes out inconsistently.
+- **BFCL**, a second test set of
+  `{python} n(M["baselines"]["official"]["raw 0.8B"]["bfcl"]["n"])` rows whose tools never appear in
+  train, to tell tool calling from learning xLAM's tools.
+- **Paired tests**: two models are compared on the same rows, and every claim carries a p-value
+  adjusted over all `{python} len(M["claims"])` claims made.
 
 ::: {.column-margin}
-Scoring rules: [the README]({{< var repo >}}#task); BFCL's conversion:
-[docs/bfcl.md]({{< var repo >}}/blob/main/docs/bfcl.md). How methods are compared:
+The paired test is McNemar's, which counts only the rows exactly one model gets right; the
+adjustment is Holm's. Details: [the metrics](evaluation/metrics.qmd),
+[comparing methods](evaluation/comparing.qmd),
 [ADR 0009]({{< var repo >}}/blob/main/docs/adr/0009-selection-stays-methods-compared-on-test-clean.md).
 :::
 

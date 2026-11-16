@@ -17,23 +17,12 @@ can't be told apart from more training.
 
 Each at its selected checkpoint: strict exact match on validation, test, test-clean and BFCL.
 
-::: {.facts}
 ```{python}
-base = "| Baseline | | | | " + " | ".join(["Validation", "Test", "Test-clean", "BFCL"]) + " |\n|---|---|---|---|---:|---:|---:|---:|\n"
-rows = [
-    f"| {who} | | | 0 | {story.score(who, 'validation')} | {story.score(who, 'test')} | "
-    f"{story.score(who)} | {story.score(who, 'bfcl')} |"
-    for who in ("raw 0.8B", "raw 2B")
-]
-Markdown(base + "\n".join(rows))
+table(["B", "Bg", "C", "D", "B→D", "Bf", "Cf", "A"], baselines=True)
 ```
 
-```{python}
-table(["B", "Bg", "C", "D", "B→D", "Bf", "Cf", "A"])
-```
-:::
-
-Every comparison between two of them, with its paired test, strict and lenient:
+Hover a method for its full name; each has its own page under Experiments. Every comparison between
+two of them, with its paired test, strict and lenient:
 [results/methods.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/methods.md).
 
 ## Accuracy and cost

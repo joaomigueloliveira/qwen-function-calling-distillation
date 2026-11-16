@@ -5,6 +5,11 @@ subtitle: "The reference: what labels buy"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** With gold labels, A reaches **`{python} story.score("A")`** on test-clean: the
+reference every label-free method is measured against.
+:::
+
 **Question.** How good does the 0.8B get when trained on xLAM's own gold answers? Every label-free
 method is measured against it.
 
@@ -12,11 +17,9 @@ method is measured against it.
 their gold answers, one epoch, the shared setup. The loss is the cross-entropy of each gold answer
 token.
 
-::: {.facts}
 ```{python}
 table(["A"])
 ```
-:::
 
 ```{ojs}
 runs = ["A"]

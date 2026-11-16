@@ -14,8 +14,8 @@ loss = target.startsWith("hard")
   ? -Math.log(probe.tokens.find(d => d.token === probe.written).student)
   : d3.sum(goal, d => d.goal > 0 ? d.goal * Math.log(d.goal / d.student) : 0)
 Plot.plot({
-  width: Math.min(width, 560), height: 250, marginLeft: 110, style: {fontSize: "13px"},
-  x: {label: "probability (%) →", domain: [0, 100], grid: true},
+  width: Math.min(width, 560), height: 270, marginLeft: 110, marginBottom: 42, style: {fontSize: "13px"},
+  x: {label: "probability (%) →", domain: [0, 100], grid: true, labelAnchor: "center", labelOffset: 34},
   y: {label: null, domain: probe.tokens.map(d => d.token)},
   fy: {domain: ["trained toward", "the 0.8B now"], axis: null},
   color: {domain: ["trained toward", "the 0.8B now"], range: ["#2a78d6", "#c3c2b7"], legend: true},

@@ -5,6 +5,12 @@ subtitle: "The student writes; the teacher grades every token"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** D ties B on test-clean (**`{python} story.score("D")`**) and leads B's selected
+checkpoint on unseen tools (`{python} story.score("D", "bfcl")` on BFCL), at
+`{python} f"{d_cost / b_cost:.1f}"`× the cost.
+:::
+
 **Question.** Does learning on its own answers, graded token by token by the teacher, beat copying
 the teacher's text? ([Off-policy and on-policy](../concepts/on-policy.qmd).)
 
@@ -13,11 +19,9 @@ temperature 1, the 2B scores every token of it, and the loss is the reverse KL o
 vocabulary. Gold is never read. TRL's `DistillationTrainer`, with the student sampling in vLLM next
 to training and the teacher, on the 12 GB card.
 
-::: {.facts}
 ```{python}
 table(["D", "B"])
 ```
-:::
 
 ```{ojs}
 runs = ["D"]

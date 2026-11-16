@@ -5,6 +5,12 @@ subtitle: "Sequence-level distillation, and the headline method"
 
 {{< include /_setup.qmd >}}
 
+::: {.key}
+**Key result.** With no labels, B passes its teacher on test-clean, **`{python} story.score("B")`**
+against `{python} story.score("raw 2B")`, in `{python} story.gpu_hours("B")` GPU-hours. It is the
+headline method.
+:::
+
 **Question.** If the student simply copies the teacher's answers, how far does it get without a
 single label?
 
@@ -15,11 +21,9 @@ leaving `{python} n(teacher["variants"]["unfiltered"]["kept"])`. Gold is never r
 answers agree with it on `{python} pct(teacher["variants"]["unfiltered"]["lenient"])` of them, under
 lenient exact. Then the same SFT recipe as A.
 
-::: {.facts}
 ```{python}
 table(["B"])
 ```
-:::
 
 ```{ojs}
 runs = ["B"]
@@ -30,8 +34,8 @@ runs = ["B"]
 ## What it shows
 
 - **The student beats its teacher on xLAM.** `{python} story.score("B")` against
-  `{python} story.score("raw 2B")` on test-clean (`{python} story.claim("B", "raw 2B", "test-clean")`),
-  and `{python} h["share_of_a"]` of what gold labels gain. It isn't format: most of the 2B's
+  `{python} story.score("raw 2B")` on test-clean (`{python} story.claim("B", "raw 2B", "test-clean")`).
+  It isn't format: most of the 2B's
   answers that fail to parse are a call cut short, not a bracket slip. And it isn't memorisation: no
   test-clean query is in train, and B's lead is larger on rows whose tool set train never saw.
 - **On unseen tools, it stays below the teacher, though not after Holm**

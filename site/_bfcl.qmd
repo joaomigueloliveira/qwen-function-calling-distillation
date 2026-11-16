@@ -1,8 +1,8 @@
 ```{ojs}
 bfcl = d3.json(root + "assets/bfcl-along.json")
 Plot.plot({
-  width: Math.min(width, 760), height: 340, marginRight: 90, style: {fontSize: "13px"},
-  x: {label: "GPU-hours on one RTX 3060 →"},
+  width: Math.min(width, 860), height: 360, marginRight: 90, marginBottom: 46, style: {fontSize: "13px"},
+  x: {label: "GPU-hours on one RTX 3060 →", labelAnchor: "center", labelOffset: 38},
   y: {label: "↑ exact match on BFCL (%)", domain: [60, 88], grid: true},
   marks: [
     Plot.ruleY(bfcl.data.baselines, {y: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),

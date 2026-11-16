@@ -9,8 +9,8 @@ viewof shown = Inputs.checkbox(Object.keys(names), {label: "Methods", value: ["A
 rows = fig.data.checkpoints.filter(d => shown.includes(d.method))
 ends = Array.from(d3.group(rows, d => d.method).values(), g => g[g.length - 1])
 Plot.plot({
-  width: Math.min(width, 760), height: 360, marginRight: 80, style: {fontSize: "13px"},
-  x: {label: "GPU-hours on one RTX 3060 →", domain: [0, 16]},
+  width: Math.min(width, 860), height: 380, marginRight: 80, marginBottom: 46, style: {fontSize: "13px"},
+  x: {label: "GPU-hours on one RTX 3060 →", domain: [0, 16], labelAnchor: "center", labelOffset: 38},
   y: {label: "↑ exact match on validation (%)", domain: [40, 90], grid: true},
   marks: [
     Plot.ruleY(fig.data.baselines.filter(b => b.split === "validation"), {y: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
@@ -29,8 +29,8 @@ Plot.plot({
 //| echo: false
 picks = fig.data.picks.filter(d => shown.includes(d.method)).sort((a, b) => b.exact - a.exact)
 Plot.plot({
-  width: Math.min(width, 760), height: 50 + 32 * picks.length, marginLeft: 90, marginRight: 70, style: {fontSize: "13px"},
-  x: {label: "exact match on test-clean (%) →", domain: [50, 100], grid: true},
+  width: Math.min(width, 860), height: 66 + 32 * picks.length, marginLeft: 90, marginRight: 70, marginBottom: 46, style: {fontSize: "13px"},
+  x: {label: "exact match on test-clean (%) →", domain: [50, 100], grid: true, labelAnchor: "center", labelOffset: 38},
   y: {label: null, domain: picks.map(d => names[d.method])},
   marks: [
     Plot.ruleX(fig.data.baselines.filter(b => b.split === "test-clean"), {x: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
