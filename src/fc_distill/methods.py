@@ -54,6 +54,18 @@ METHODS = (
         "train-sft-teacher-grounded-r16-b4x4-n33918-gl-s0",
         labels=False,
     ),
+    Method(
+        "C",
+        "logit distillation (teacher's top 20)",
+        "train-sft-teacher-topk-r16-b4x4-n52424-gl-s0",
+        labels=False,
+    ),
+    Method(
+        "Cf",
+        "logit distillation on teacher outputs that match gold",
+        "train-sft-teacher-topk-lenient-r16-b4x4-n37696-gl-s0",
+        labels=True,
+    ),
     Method("D", "on-policy distillation", "train-opd-r16-b4x4-n54561-s0", labels=False),
     Method(
         "B→D",
@@ -98,6 +110,12 @@ CLAIMS = (
     ("Bg", "B", "test-clean"),
     ("Bg", "B", "bfcl"),
     ("Bf", "Bg", "test-clean"),
+    # C and filtered C (ADR 0010), set before their runs: soft against hard targets on the same
+    # text, without labels and with them.
+    ("C", "B", "test-clean"),
+    ("C", "B", "bfcl"),
+    ("Cf", "Bf", "test-clean"),
+    ("Cf", "Bf", "bfcl"),
 )
 
 

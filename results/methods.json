@@ -3510,7 +3510,12 @@
    "holm_p": 0.028610733714190505
   }
  ],
- "claims_missing": [],
+ "claims_missing": [
+  "C vs B, test-clean",
+  "C vs B, bfcl",
+  "Cf vs Bf, test-clean",
+  "Cf vs Bf, bfcl"
+ ],
  "defaults": {
   "raw 0.8B": {
    "rows": 123,

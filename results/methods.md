@@ -38,6 +38,8 @@ Gap recovered = (method - raw 0.8B) / (raw 2B - raw 0.8B); share of A's gain = (
 
 Each pairwise comparison the README states, as first / second right on the rows where only one is (#68). Strict exact is the headline; Holm adjusts its p-values over the claims listed. Lenient exact ignores optional arguments passed at their declared default or null, on either side (BFCL has no lenient score). On test-clean, the last column leaves out the rows the audit tags "default made explicit" (see below). The lenient and last columns give unadjusted p-values.
 
+Not yet measured: C vs B, test-clean; C vs B, bfcl; Cf vs Bf, test-clean; Cf vs Bf, bfcl.
+
 | First | Second | Eval | Strict | Holm p | Lenient | Strict, no default rows |
 |---|---:|---:|---:|---:|---:|---:|
 | B | raw 2B | test-clean | 159 / 52, < 0.0001 | < 0.0001 | 139 / 57, < 0.0001 | 124 / 44, < 0.0001 |

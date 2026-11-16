@@ -1,3 +1,4 @@
+import json
 import math
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ from fc_distill.teacher_topk import (
     answer_positions,
     coverage,
     load_topk,
+    load_topk_run,
     save_topk,
     score_row,
     top_k_entries,
@@ -131,3 +133,25 @@ def test_score_row_keeps_only_the_answer_positions_of_vllms_flat_log_probs() -> 
     np.testing.assert_array_equal(row.ids, [[7, 9], [9, 6]])
     np.testing.assert_array_equal(row.token_rank, [1, 5])
     np.testing.assert_allclose(row.token_logprob, [-0.2, -4.0])
+
+
+def test_teacher_topk_run_loads_its_rows_and_scoring_hours(tmp_path: Path) -> None:
+    save_topk(tmp_path / "topk.npz", _ROWS)
+    (tmp_path / "summary.json").write_text(
+        json.dumps({"teacher_run": "runs/eval-train-x", "gpu_hours": 1.5})
+    )
+
+    run = load_topk_run(tmp_path, Path("runs/eval-train-x"))
+
+    assert sorted(run.rows) == [3, 8]
+    assert run.gpu_hours == 1.5
+
+
+def test_teacher_topk_run_must_score_the_teacher_run_it_is_paired_with(tmp_path: Path) -> None:
+    save_topk(tmp_path / "topk.npz", _ROWS)
+    (tmp_path / "summary.json").write_text(
+        json.dumps({"teacher_run": "runs/eval-train-x", "gpu_hours": 1.5})
+    )
+
+    with pytest.raises(ValueError, match="eval-train-y"):
+        load_topk_run(tmp_path, Path("runs/eval-train-y"))

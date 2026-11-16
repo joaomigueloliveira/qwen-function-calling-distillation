@@ -4,20 +4,28 @@ from types import SimpleNamespace
 
 import pytest
 
-from fc_distill.data import to_messages
+from fc_distill.data import Example, to_messages
 from fc_distill.scoring import score
 from fc_distill.sft import (
     ComputeLogger,
+    Filter,
     SftRecord,
     cost_summary,
     load_teacher_run,
     sft_record,
-    teacher_records,
     teacher_rows,
 )
 from fc_distill.tracking import GpuClock
 from tests.factories import make_example
 from tests.fakes import FakeTracker
+
+
+def teacher_records(
+    rows: list[Example], outputs: dict[int, str], *, rule: Filter
+) -> tuple[list[SftRecord], dict[str, int]]:
+    """`teacher_rows` without the row ids: the records fc-sft trains B on."""
+    kept, counts = teacher_rows(rows, outputs, rule=rule)
+    return [record for _, record in kept], counts
 
 
 def test_record_prompts_like_the_eval_and_completes_with_the_gold_calls() -> None:
