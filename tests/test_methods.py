@@ -5,7 +5,16 @@ from typing import Any
 import pytest
 
 from fc_distill import methods
-from fc_distill.methods import METHODS, build, gains, render, select, teacher_counts, validity
+from fc_distill.methods import (
+    METHODS,
+    build,
+    gains,
+    output_format,
+    render,
+    select,
+    teacher_counts,
+    validity,
+)
 from tests.factories import make_example
 
 TOOL = {
@@ -58,7 +67,9 @@ def _write_run(path: Path, records: list[dict[str, Any]], summary: dict[str, Any
 
 def _rows(ids: range, right: set[int]) -> list[dict[str, Any]]:
     return [
-        {"id": i, "parse_ok": True, "exact": i in right, "lenient_exact": i in right} for i in ids
+        {"id": i, "prediction": "[]", "parse_ok": True, "exact": i in right}
+        | {"lenient_exact": i in right}
+        for i in ids
     ]
 
 
@@ -109,7 +120,9 @@ def test_build_selects_per_method_compares_and_renders(
         "not_in_query_kept": 1,
     }
     assert data["teacher"]["unparsed"] == 1
+    assert set(data["formats"]) == {"raw 0.8B", "A"}  # the ones with a test run
     md = render(data)
+    assert "## Output format" in md
     assert "**B**, SFT on teacher outputs (step 500)" in md
     assert "Inside its interval" in md
 
@@ -194,6 +207,33 @@ def test_a_method_selected_within_bs_budget_gets_no_second_entry_at_it(
     assert "Bg" not in data["at_b_budget"]
 
 
+def test_a_method_with_no_checkpoint_within_bs_budget_is_named_as_such(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    splits = tmp_path / "splits.json"
+    splits.write_text(json.dumps({"test-clean": [0, 1, 2, 3]}))
+    val = range(10)
+    _write_run(tmp_path / "eval-validation-Qwen_Qwen3.5-0.8B", _rows(val, {0}), {})
+    _write_run(tmp_path / "eval-validation-Qwen_Qwen3.5-2B", _rows(val, set(range(5))), {})
+    by_key = {m.key: m for m in METHODS}
+    # C's teacher passes alone cost more than B's whole pick: its first checkpoint is past it.
+    runs = {"B": {1000: (3.1, 7)}, "C": {500: (3.6, 6), 1000: (4.1, 7)}}
+    for key, checkpoints in runs.items():
+        for step, (hours, k) in checkpoints.items():
+            _write_run(
+                tmp_path / f"eval-validation-{by_key[key].train_run}-checkpoint-{step}",
+                _rows(val, set(range(k))),
+                {"adapter": {"gpu_hours": hours}},
+            )
+    monkeypatch.setattr(methods, "load_split", lambda split, path: [])
+
+    data = build(tmp_path, splits)
+
+    assert "C" not in data["at_b_budget"]
+    assert data["over_b_budget"] == ["C"]
+    assert "No checkpoint of C falls within it." in render(data)
+
+
 def test_a_pipeline_counts_the_gpu_hours_of_the_checkpoint_it_continues(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -226,7 +266,9 @@ def test_a_pipeline_counts_the_gpu_hours_of_the_checkpoint_it_continues(
 
 def _scored(ids: range, exact: set[int], lenient: set[int]) -> list[dict[str, Any]]:
     return [
-        {"id": i, "parse_ok": True, "exact": i in exact, "lenient_exact": i in lenient} for i in ids
+        {"id": i, "prediction": "[]", "parse_ok": True, "exact": i in exact}
+        | {"lenient_exact": i in lenient}
+        for i in ids
     ]
 
 
@@ -356,3 +398,14 @@ def test_bfcl_along_the_run_scores_each_checkpoint_and_its_agreement_with_the_2b
     assert "| - | - | - |" in section
     # Explanation only: the selected checkpoint is still validation's best.
     assert data["methods"]["B"]["selected"] == 1000
+
+
+def test_output_format_counts_fenced_and_multi_line_answers_apart() -> None:
+    records = [
+        {"prediction": '[{"name": "f", "arguments": {}}]'},  # one line, as B's targets
+        {"prediction": '```json\n[{"name": "f", "arguments": {}}]\n```'},  # fenced
+        {"prediction": '[\n  {"name": "f", "arguments": {}}\n]'},  # pretty-printed
+        {"prediction": '  [{"name": "f"}]\n'},  # a trailing newline isn't layout
+    ]
+
+    assert output_format(records) == {"n": 4, "fenced": 0.25, "multi_line": 0.25}
