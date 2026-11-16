@@ -3562,5 +3562,47 @@
    "default_made_explicit": 0.2683,
    "rest": 0.8549
   }
+ },
+ "formats": {
+  "raw 0.8B": {
+   "n": 1625,
+   "fenced": 0.0018,
+   "multi_line": 0.3145
+  },
+  "raw 2B": {
+   "n": 1625,
+   "fenced": 0.0363,
+   "multi_line": 0.0603
+  },
+  "A": {
+   "n": 1625,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  "B": {
+   "n": 1625,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  "Bf": {
+   "n": 1625,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  "Bg": {
+   "n": 1625,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  "D": {
+   "n": 1625,
+   "fenced": 0.0111,
+   "multi_line": 0.0308
+  },
+  "B\u2192D": {
+   "n": 1625,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  }
  }
 }

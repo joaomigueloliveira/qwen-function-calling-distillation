@@ -80,6 +80,21 @@ Strict exact on the 123 test-clean rows the audit tags "default made explicit", 
 | B→D | 23.6 | 86.4 |
 | D@500 | 26.8 | 85.5 |
 
+## Output format
+
+How each model lays out its test-clean answers: fenced in ```, or a bare list spread over several lines. fc-eval parses both like a one-line list, so this explains, it doesn't score. B trains on one-line lists; C's soft targets keep the 2B's preference for a fence or a newline where it had one (ADR 0010).
+
+| Model | Fenced | Multi-line |
+|---|---:|---:|
+| raw 0.8B | 0.2 | 31.4 |
+| raw 2B | 3.6 | 6.0 |
+| A | 0.0 | 0.0 |
+| B | 0.0 | 0.0 |
+| Bf | 0.0 | 0.0 |
+| Bg | 0.0 | 0.0 |
+| D | 1.1 | 3.1 |
+| B→D | 0.0 | 0.0 |
+
 ## At B's budget
 
 Each label-free method at its best checkpoint on validation within B's 3.12 GPU-hours (ADR 0008), with its official scores, against B's selected checkpoint. Only B / only it right are the McNemar counts on each eval.

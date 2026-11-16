@@ -188,6 +188,17 @@ def teacher_counts(
     return out
 
 
+def output_format(records: Sequence[Mapping[str, Any]]) -> dict[str, float]:
+    """How a model lays out its answers: the share fenced in ``` and the share of the rest spread
+    over several lines. Explanation only (ADR 0010): fc-eval parses both like a one-line list, so
+    a method that learns the 2B's layout shows here, not in exact match."""
+    texts = [r["prediction"].strip() for r in records]
+    fenced = sum(t.startswith("```") for t in texts)
+    multi = sum("\n" in t for t in texts if not t.startswith("```"))
+    n = len(texts)
+    return {"n": n, "fenced": round(fenced / n, 4), "multi_line": round(multi / n, 4)}
+
+
 def _eval_dir(split: str, run: str) -> str:
     """The eval run an official split is read from: test-clean comes from the test run."""
     return f"eval-{'test' if split == 'test-clean' else split}-{run.replace('/', '_')}"
@@ -251,9 +262,12 @@ def build(
         } & clean
     exact: dict[tuple[str, str], dict[Any, bool]] = {}
     lenient: dict[tuple[str, str], dict[Any, bool]] = {}
+    layouts: dict[str, dict[str, float]] = {}
 
     def keep(who: str, split: str, records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         exact[who, split] = {r["id"]: r["exact"] for r in records}
+        if split == "test-clean":
+            layouts[who] = output_format(records)
         if split != "bfcl":
             lenient[who, split] = {r["id"]: r["lenient_exact"] for r in records}
         return metric_block(records, ("exact",) if split == "bfcl" else METRICS)
@@ -414,6 +428,11 @@ def build(
     for claim, adjusted in zip(claims, holm([c["p"] for c in claims]), strict=True):
         claim["holm_p"] = adjusted
 
+    formats = {
+        who: layouts[ids.get(who, who)]
+        for who in [*BASELINES.values(), *methods]
+        if ids.get(who, who) in layouts
+    }
     defaults: dict[str, Any] = {}
     whos = [*BASELINES.values(), *methods, *(f"{k}@{c['step']}" for k, c in at_b_budget.items())]
     for who in whos:
@@ -445,6 +464,7 @@ def build(
         "claims": claims,
         "claims_missing": claims_missing,
         "defaults": defaults,
+        "formats": formats,
     }
 
 
@@ -602,6 +622,24 @@ def render(data: Mapping[str, Any]) -> str:
             [
                 [who, f"{100 * v['default_made_explicit']:.1f}", f"{100 * v['rest']:.1f}"]
                 for who, v in data["defaults"].items()
+            ],
+        )
+    if data.get("formats"):
+        out += [
+            "",
+            "## Output format",
+            "",
+            "How each model lays out its test-clean answers: fenced in ```, or a bare list spread "
+            "over several lines. fc-eval parses both like a one-line list, so this explains, it "
+            "doesn't score. B trains on one-line lists; C's soft targets keep the 2B's preference "
+            "for a fence or a newline where it had one (ADR 0010).",
+            "",
+        ]
+        out += _table(
+            ["Model", "Fenced", "Multi-line"],
+            [
+                [who, f"{100 * v['fenced']:.1f}", f"{100 * v['multi_line']:.1f}"]
+                for who, v in data["formats"].items()
             ],
         )
     if data["at_b_budget"]:

@@ -5,7 +5,16 @@ from typing import Any
 import pytest
 
 from fc_distill import methods
-from fc_distill.methods import METHODS, build, gains, render, select, teacher_counts, validity
+from fc_distill.methods import (
+    METHODS,
+    build,
+    gains,
+    output_format,
+    render,
+    select,
+    teacher_counts,
+    validity,
+)
 from tests.factories import make_example
 
 TOOL = {
@@ -58,7 +67,9 @@ def _write_run(path: Path, records: list[dict[str, Any]], summary: dict[str, Any
 
 def _rows(ids: range, right: set[int]) -> list[dict[str, Any]]:
     return [
-        {"id": i, "parse_ok": True, "exact": i in right, "lenient_exact": i in right} for i in ids
+        {"id": i, "prediction": "[]", "parse_ok": True, "exact": i in right}
+        | {"lenient_exact": i in right}
+        for i in ids
     ]
 
 
@@ -109,7 +120,9 @@ def test_build_selects_per_method_compares_and_renders(
         "not_in_query_kept": 1,
     }
     assert data["teacher"]["unparsed"] == 1
+    assert set(data["formats"]) == {"raw 0.8B", "A"}  # the ones with a test run
     md = render(data)
+    assert "## Output format" in md
     assert "**B**, SFT on teacher outputs (step 500)" in md
     assert "Inside its interval" in md
 
@@ -226,7 +239,9 @@ def test_a_pipeline_counts_the_gpu_hours_of_the_checkpoint_it_continues(
 
 def _scored(ids: range, exact: set[int], lenient: set[int]) -> list[dict[str, Any]]:
     return [
-        {"id": i, "parse_ok": True, "exact": i in exact, "lenient_exact": i in lenient} for i in ids
+        {"id": i, "prediction": "[]", "parse_ok": True, "exact": i in exact}
+        | {"lenient_exact": i in lenient}
+        for i in ids
     ]
 
 
@@ -356,3 +371,14 @@ def test_bfcl_along_the_run_scores_each_checkpoint_and_its_agreement_with_the_2b
     assert "| - | - | - |" in section
     # Explanation only: the selected checkpoint is still validation's best.
     assert data["methods"]["B"]["selected"] == 1000
+
+
+def test_output_format_counts_fenced_and_multi_line_answers_apart() -> None:
+    records = [
+        {"prediction": '[{"name": "f", "arguments": {}}]'},  # one line, as B's targets
+        {"prediction": '```json\n[{"name": "f", "arguments": {}}]\n```'},  # fenced
+        {"prediction": '[\n  {"name": "f", "arguments": {}}\n]'},  # pretty-printed
+        {"prediction": '  [{"name": "f"}]\n'},  # a trailing newline isn't layout
+    ]
+
+    assert output_format(records) == {"n": 4, "fenced": 0.25, "multi_line": 0.25}
