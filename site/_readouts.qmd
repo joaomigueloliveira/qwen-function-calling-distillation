@@ -1,0 +1,23 @@
+```{ojs}
+readouts = FileAttachment("figures/readouts.json").json()
+viewof readout = Inputs.radio(new Map([
+  ["right on the default rows", "default_made_explicit"],
+  ["answers fenced in a code block", "fenced"],
+  ["answers over several lines", "multi_line"],
+]), {value: "default_made_explicit", label: "Show"})
+Plot.plot({
+  width: Math.min(width, 640), height: 40 + 26 * readouts.data.length, marginLeft: 100, style: {fontSize: "13px"},
+  x: {label: "% →", grid: true},
+  y: {label: null, domain: readouts.data.map(d => names[d.model] ?? d.model)},
+  marks: [
+    Plot.barX(readouts.data.filter(d => d[readout] !== null), {x: d => 100 * d[readout], y: d => names[d.model] ?? d.model,
+      fill: d => colors[d.model] ?? "#898781", tip: true, title: d => `${names[d.model] ?? d.model}: ${(100 * d[readout]).toFixed(1)}%`}),
+    Plot.ruleX([0]),
+  ],
+})
+```
+
+::: {.caption}
+Readouts on test-clean, never used to choose a checkpoint. Default rows: the rows where gold and a
+baseline differ only by an optional argument written out at its default.
+:::

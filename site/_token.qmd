@@ -1,0 +1,35 @@
+```{ojs}
+probe = FileAttachment("probe/forecast-days.json").json()
+```
+
+```{ojs}
+md`The query is *"${probe.query}"*, and the teacher answers \`${probe.answer}\`. At the token after
+\`"days": \` it writes **${probe.written}**, but here is what each model actually puts there:`
+```
+
+```{ojs}
+viewof target = Inputs.radio(["hard target (B)", "soft target (C)"], {value: "soft target (C)", label: "Train toward"})
+goal = probe.tokens.map(d => ({...d, goal: target.startsWith("hard") ? (d.token === probe.written ? 1 : 0) : d.teacher}))
+loss = target.startsWith("hard")
+  ? -Math.log(probe.tokens.find(d => d.token === probe.written).student)
+  : d3.sum(goal, d => d.goal > 0 ? d.goal * Math.log(d.goal / d.student) : 0)
+Plot.plot({
+  width: Math.min(width, 560), height: 250, marginLeft: 110, style: {fontSize: "13px"},
+  x: {label: "probability (%) →", domain: [0, 100], grid: true},
+  y: {label: null, domain: probe.tokens.map(d => d.token)},
+  fy: {domain: ["trained toward", "the 0.8B now"], axis: null},
+  color: {domain: ["trained toward", "the 0.8B now"], range: ["#2a78d6", "#c3c2b7"], legend: true},
+  marks: [Plot.barX(goal.flatMap(d => [
+      {token: d.token, who: "trained toward", p: d.goal},
+      {token: d.token, who: "the 0.8B now", p: d.student},
+    ]), {x: d => 100 * d.p, y: "token", fy: "who", fill: "who",
+    tip: true, title: d => `${d.who}: ${(100 * d.p).toFixed(1)}% on "${d.token}"`})],
+})
+```
+
+```{ojs}
+md`The untrained student prefers 7. Loss at this token: **${loss.toFixed(2)} nats**
+(${target.startsWith("hard") ? "cross-entropy on the written token" : "KL(teacher ‖ student)"}).
+The hard target pushes all of the student's probability onto 3; the soft target only asks it to
+match the teacher, who also thinks 7 is plausible.`
+```

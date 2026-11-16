@@ -1,0 +1,25 @@
+```{ojs}
+bfcl = FileAttachment("figures/bfcl-along.json").json()
+Plot.plot({
+  width: Math.min(width, 760), height: 340, marginRight: 90, style: {fontSize: "13px"},
+  x: {label: "GPU-hours on one RTX 3060 →"},
+  y: {label: "↑ exact match on BFCL (%)", domain: [60, 88], grid: true},
+  marks: [
+    Plot.ruleY(bfcl.data.baselines, {y: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
+    Plot.text(bfcl.data.baselines, {x: 2, y: d => 100 * d.exact, text: d => d.model === "raw 2B" ? "2B teacher" : "untrained 0.8B", dy: -7, textAnchor: "start", fill: "#898781"}),
+    Plot.line(bfcl.data.runs.filter(d => !d.labels), {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method], strokeWidth: 2}),
+    Plot.line(bfcl.data.runs.filter(d => d.labels), {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method], strokeWidth: 2, strokeDasharray: "5,3"}),
+    Plot.dot(bfcl.data.runs.filter(d => d.pick), {x: "gpu_hours", y: d => 100 * d.exact, r: 8, stroke: d => colors[d.method], strokeWidth: 1.5}),
+    Plot.dot(bfcl.data.runs, {x: "gpu_hours", y: d => 100 * d.exact, fill: d => colors[d.method], r: 3.5,
+      tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (chosen)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours\n${(100 * d.exact).toFixed(1)}% [${(100 * d.ci[0]).toFixed(1)}, ${(100 * d.ci[1]).toFixed(1)}] on BFCL`}),
+    Plot.text(Array.from(d3.group(bfcl.data.runs, d => d.method).values(), g => g[g.length - 1]),
+      {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 8, textAnchor: "start"}),
+  ],
+})
+```
+
+::: {.caption}
+Exact match on BFCL, tools never seen in training, at every checkpoint scored there. Rings mark the
+checkpoint validation chose; dashed lines used labels. Each point's 95% interval is about ±2.5
+points (hover).
+:::

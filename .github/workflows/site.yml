@@ -1,0 +1,44 @@
+name: Site
+
+# Builds the story site (site/) and publishes it to GitHub Pages. Every number on it is computed
+# from results/ and data/ at build time (fc_distill.story), so a results change republishes it.
+on:
+  push:
+    branches: [main]
+    paths: [site/**, results/**, data/**, docs/figures/**, src/fc_distill/story.py, .github/workflows/site.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync --locked --group site
+      - run: uv run --group site quarto render site
+        env:
+          QUARTO_PYTHON: .venv/bin/python
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

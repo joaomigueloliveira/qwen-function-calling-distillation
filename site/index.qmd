@@ -1,0 +1,324 @@
+---
+title: "Distilling function calling without labels"
+subtitle: "Qwen3.5-2B → Qwen3.5-0.8B on xLAM-60k, on one 12 GB GPU"
+author: "João Oliveira"
+---
+
+```{python}
+import csv
+import json
+from pathlib import Path
+
+from fc_distill.story import Story
+
+story = Story.load(Path("../results"))
+M = story.methods
+h = story.headline()
+serve = story.serving()
+splits = {k: len(v) for k, v in json.loads(Path("../data/splits.json").read_text()).items()}
+with open("../data/audit/test_labels.csv") as f:
+    audit = list(csv.DictReader(f))
+verdicts = {v: sum(r["verdict"] == v for r in audit) for v in ("label_ambiguous", "label_wrong")}
+defaults_rows = M["defaults"]["B"]["rows"]
+teacher = M["teacher"]
+REPO = "https://github.com/joaomigueloliveira/qwen-function-calling-distillation"
+
+
+def pct(x: float, digits: int = 1) -> str:
+    return f"{100 * x:.{digits}f}%"
+
+
+def n(x: int) -> str:
+    return f"{x:,}"
+
+
+def selected(key: str) -> dict:
+    m = M["methods"][key]
+    return next(c for c in m["checkpoints"] if c["step"] == m["selected"])
+
+
+def bfcl_at(key: str, step: int) -> str:
+    c = next(c for c in M["methods"][key]["checkpoints"] if c["step"] == step)
+    return pct(c["bfcl"]["exact"])
+
+
+last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
+d_budget = M["at_b_budget"]["D"]
+```
+
+::: {.hero}
+::: {.claim}
+Trained only on a 2B model's answers, a 0.8B model calls tools better than its teacher, in
+`{python} h["gpu_hours"]` GPU-hours on one consumer GPU.
+:::
+:::
+
+::: {.tiles}
+::: {.tile}
+[`{python} h["after"]`]{.n} [the 0.8B after distillation, xLAM test-clean]{.l}
+:::
+::: {.tile}
+[`{python} h["teacher"]`]{.n} [its 2B teacher]{.l}
+:::
+::: {.tile}
+[`{python} h["before"]`]{.n} [the 0.8B before]{.l}
+:::
+::: {.tile}
+[`{python} h["gpu_hours"]` h]{.n} [GPU-hours on an RTX 3060, the teacher's work included]{.l}
+:::
+:::
+
+::: {.takeaways}
+1. **Copying the teacher's answers is enough.** Supervised fine-tuning on the 2B's own answers (B)
+   takes the 0.8B from `{python} h["before"]` to `{python} h["after"]` exact match, past the
+   teacher's `{python} h["teacher"]` and `{python} h["share_of_a"]` of what training on gold labels gains.
+2. **Three kinds of distillation tie.** Matching the teacher's probabilities (C) and learning on the
+   student's own answers (D) land within a point of B. They differ in cost, and on tools the student
+   never saw.
+3. **Labels still buy a lot**: the same recipe on gold answers reaches `{python} h["with_labels"]`.
+4. **The student serves `{python} serve["one_at_a_time"]` faster** than its teacher, one request at a time.
+:::
+
+{{< include _cost.qmd >}}
+
+## The question
+
+Distillation is what you reach for when there are queries but no answers, and a model better than
+the one you want to ship. Here the job is *function calling*: given a user's request and a list of
+tools, write the JSON calls that answer it. The teacher is Qwen3.5-2B, the student Qwen3.5-0.8B,
+from the same family and with the same tokenizer, and everything runs on one RTX 3060 with 12 GB.
+
+So the question is: **without labels, how close does the student get to one trained on gold
+answers, per GPU-hour?** Every method is labelled by whether its training reads gold. The
+label-free ones answer the question; those with labels are the reference for what labels buy.
+
+::: {.column-margin}
+Why this pair and this question: [ADR 0004]({{< var repo >}}/blob/main/docs/adr/0004-student-teacher-pair.md),
+[ADR 0007]({{< var repo >}}/blob/main/docs/adr/0007-label-free-is-the-main-question.md).
+Thinking is off for both models ([ADR 0003]({{< var repo >}}/blob/main/docs/adr/0003-thinking-off.md)).
+:::
+
+## The data
+
+Salesforce's [xLAM-60k](https://huggingface.co/datasets/Salesforce/xlam-function-calling-60k) holds
+60,000 such tasks. One looks like this (made up, in xLAM's format):
+
+```text
+Query:  Give me the forecast for Lisbon.
+Tools:  get_forecast(city: str, days: int, optional, default 7), get_time(city: str), …
+Answer: [{"name": "get_forecast", "arguments": {"city": "Lisbon", "days": 3}}]
+```
+
+It is split into `{python} n(splits["train"])` training rows, `{python} n(splits["validation"])`
+for validation and `{python} n(splits["test"])` for test, grouped so that no query appears in two
+splits. Checkpoints and settings are chosen on validation; test is run once, for the numbers
+reported.
+
+Gold isn't always right. Every test row a baseline model got wrong was audited by hand:
+`{python} n(verdicts["label_wrong"])` labels are wrong and `{python} n(verdicts["label_ambiguous"])`
+are one reasonable answer among several. **test-clean** is test without them,
+`{python} n(splits["test-clean"])` rows, and it is where methods are compared. Test labels are never
+edited.
+
+::: {.column-margin}
+The split, the audit and the train filters:
+[the dataset card]({{< var repo >}}/blob/main/docs/DATASET.md),
+[ADR 0001]({{< var repo >}}/blob/main/docs/adr/0001-train-validation-test-split.md),
+[ADR 0002]({{< var repo >}}/blob/main/docs/adr/0002-test-labels-never-edited.md),
+[ADR 0005]({{< var repo >}}/blob/main/docs/adr/0005-train-and-validation-keep-label-noise.md).
+:::
+
+## Measuring it
+
+An answer scores when its calls equal gold's, in any order: **strict exact match**, with no model
+as judge. Many xLAM tools have optional arguments, and gold sometimes writes them out at their
+default; **lenient exact** ignores those, and is reported beside strict.
+
+xLAM's test rows call tools the student saw in training, with new values. To see whether a method
+learned tool calling or xLAM's tools, every chosen checkpoint is also run on
+`{python} n(M["baselines"]["official"]["raw 0.8B"]["bfcl"]["n"])` rows of
+[BFCL](https://gorilla.cs.berkeley.edu/leaderboard.html), the Berkeley Function-Calling
+Leaderboard, whose tools never appear in train.
+
+Two models are compared on the same rows with a paired **McNemar test**, which counts only the rows
+exactly one of them gets right. Every claim below carries its **Holm**-adjusted p-value over all
+`{python} len(M["claims"])` claims tested, so testing many doesn't make one look significant by
+chance.
+
+::: {.column-margin}
+Scoring rules: [the README]({{< var repo >}}#task); BFCL's conversion:
+[docs/bfcl.md]({{< var repo >}}/blob/main/docs/bfcl.md). How methods are compared:
+[ADR 0009]({{< var repo >}}/blob/main/docs/adr/0009-selection-stays-methods-compared-on-test-clean.md).
+:::
+
+## The methods
+
+Every method starts from the same untrained 0.8B, with the same LoRA adapter, learning rate and one
+epoch. They differ in one thing: *what the student is trained toward* at each token.
+
+::: {.column-margin}
+The shared setup, untuned: LoRA rank 16, learning rate 2e-4, 16 rows a step
+([ADR 0006]({{< var repo >}}/blob/main/docs/adr/0006-shared-training-setup.md)). One epoch costs
+about 3.9 GPU-hours ([results/sft-cost.md]({{< var repo >}}/blob/main/results/sft-cost.md)).
+:::
+
+### Hard targets: copy the teacher's answers
+
+The simplest way to learn from a teacher is to treat its answers as labels. The 2B answers all
+`{python} n(teacher["rows"])` training queries once (`{python} f"{teacher['gpu_hours']:.1f}"`
+GPU-hours), the `{python} n(teacher["variants"]["unfiltered"]["kept"])` answers that parse are kept,
+and the 0.8B is fine-tuned on them: **B**, supervised fine-tuning (SFT) on teacher outputs. **A** is
+the same recipe on xLAM's gold answers. At each answer token the loss is the cross-entropy of the one
+token written there: a *hard target*.
+
+::: {.column-margin}
+This is sequence-level distillation ([Kim & Rush, 2016](https://arxiv.org/abs/1606.07947)). The
+teacher's answers agree with gold on `{python} pct(teacher["variants"]["unfiltered"]["lenient"])` of
+train rows, under lenient exact.
+:::
+
+**Result.** B reaches **`{python} story.score("B")`** on test-clean in
+`{python} story.gpu_hours("B")` GPU-hours, past its teacher's `{python} story.score("raw 2B")`
+(`{python} story.claim("B", "raw 2B", "test-clean")`). A reaches `{python} story.score("A")`.
+
+### Soft targets: the teacher's whole distribution
+
+A hard target says the written token is right and every other is wrong. But the teacher has an
+opinion about every token. Here is one, from a real measurement of both models:
+
+{{< include _token.qmd >}}
+
+Cross-entropy on the written token is a KL divergence against a teacher that puts all its
+probability on that token. **C**, logit distillation, puts the rest back. On the same rows and text
+as B, the 2B's 20 likeliest tokens and one entry for everything else are stored at every answer
+token, and the loss is the forward KL, KL(teacher ‖ student): a *soft target*.
+
+The teacher is usually sure: its written token is almost always its first choice, by a wide margin.
+So C differs from B only where the teacher hesitates, as it does over `days` above.
+
+::: {.column-margin}
+[Hinton et al., 2015](https://arxiv.org/abs/1503.02531). The stored top 20 and why no renormalising:
+[ADR 0010]({{< var repo >}}/blob/main/docs/adr/0010-method-c-stored-top-k-logit-distillation.md).
+:::
+
+**Result.** C ties B on test-clean, `{python} story.score("C")` at
+`{python} story.gpu_hours("C")` GPU-hours (`{python} story.claim("C", "B", "test-clean")`). On
+unseen tools it leads B, `{python} story.score("C", "bfcl")` against
+`{python} story.score("B", "bfcl")`, but not after Holm (`{python} story.claim("C", "B", "bfcl")`).
+
+### On-policy: the teacher grades the student's own answers
+
+B and C learn from text the teacher wrote. At test time the student writes its own, and one early
+slip takes it somewhere it never trained. **D**, on-policy distillation, trains on the student's
+own answers: the 0.8B writes one, the 2B scores every token of it, and the loss is the reverse KL,
+KL(student ‖ teacher), which pushes down probability the student puts where the teacher puts little.
+
+::: {.column-margin}
+[Thinking Machines, 2025](https://thinkingmachines.ai/blog/on-policy-distillation/);
+[GKD](https://arxiv.org/abs/2306.13649). TRL's `DistillationTrainer`, the student sampling in vLLM
+next to training and the teacher, on one 12 GB card
+([ADR 0008]({{< var repo >}}/blob/main/docs/adr/0008-method-d-setup.md)).
+:::
+
+**Result.** D ties B on test-clean, `{python} story.score("D")`
+(`{python} story.claim("D", "B", "test-clean")`), at `{python} story.gpu_hours("D")` GPU-hours.
+It is better on unseen tools: `{python} story.score("D", "bfcl")` on BFCL
+(`{python} story.claim("D", "B", "bfcl")`).
+
+### Filtering the teacher's answers
+
+Some of the teacher's answers are wrong. **Filtered B** keeps the
+`{python} n(teacher["variants"]["lenient"]["kept"])` that match gold, so it uses labels as a filter:
+`{python} story.score("Bf")` (`{python} story.claim("Bf", "B", "test-clean")`). **Grounded B**
+keeps the `{python} n(teacher["variants"]["grounded"]["kept"])` whose every value is written in the
+query, a rule that never reads gold: `{python} story.score("Bg")`, a tie with B
+(`{python} story.claim("Bg", "B", "test-clean")`). **Filtered C** is C on filtered B's rows,
+`{python} story.score("Cf")`, and **B then D** runs D's loss on top of B,
+`{python} story.score("B→D")` (`{python} story.claim("B→D", "B", "test-clean")`).
+
+## What we found
+
+### The label-free methods tie, so the simplest is the headline
+
+B, C, D and grounded B can't be separated on test-clean. Where methods tie, the cheaper is
+published, and within 10% of B's cost the simpler pipeline: so B, at its checkpoint chosen on
+validation, is the headline method. The pick within a run is itself noisy, so every claim names its
+checkpoint.
+
+::: {.column-margin}
+The rule and why it was read this way:
+[ADR 0009]({{< var repo >}}/blob/main/docs/adr/0009-selection-stays-methods-compared-on-test-clean.md),
+[#95]({{< var repo >}}/issues/95).
+:::
+
+### The student beats its teacher, and not by format
+
+B's lead over the 2B is not that it always writes valid JSON: most of the 2B's answers that fail to
+parse are a first call cut short, and repairing them makes almost none right. Nor is it
+memorisation: no test-clean query appears in train, and B's lead is larger on rows whose tools train
+never offered. What it is remains open; a run of the 2B on its own answers would test whether it is
+self-training.
+
+::: {.column-margin}
+The analysis: [the README's first finding]({{< var repo >}}#results).
+:::
+
+### On unseen tools, faster, not better
+
+D's lead over B on BFCL holds for the checkpoints validation chose. Scored along whole runs, the
+picture changes: B's BFCL keeps rising after its pick, to `{python} pct(last["B"]["bfcl"]["exact"])`
+at the end of its epoch. On clean rows, soft targets (filtered C) reach their BFCL score sooner than hard ones (filtered B), without ending higher.
+
+{{< include _bfcl.qmd >}}
+
+::: {.column-margin}
+Measured after the picks, as explanation only: [#70]({{< var repo >}}/issues/70),
+[#88]({{< var repo >}}/issues/88).
+:::
+
+### Per GPU-hour, on-policy shows no advantage
+
+At B's budget, D's best checkpoint (step `{python} d_budget["step"]`,
+`{python} f"{d_budget['gpu_hours']:.1f}"` GPU-hours) scores
+`{python} pct(d_budget["official"]["test-clean"]["exact"])` on test-clean, against B's
+`{python} story.score("B")` (`{python} story.claim("D@500", "B", "test-clean")`). D's BFCL also
+rises with training, so with one seed the data can't tell on-policy learning from more training.
+
+### What the methods copy
+
+Methods also differ in habits they pick up. Gold sometimes writes optional arguments out at their
+default; on the `{python} defaults_rows` test-clean rows that turn on it, A gets
+`{python} pct(M["defaults"]["A"]["default_made_explicit"], 0)` right and B
+`{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)`. The soft targets carry the
+teacher's own habits: C fences `{python} pct(M["formats"]["C"]["fenced"])` of its answers in a
+code block, as the 2B does `{python} pct(M["formats"]["raw 2B"]["fenced"])` of the time, and B
+never.
+
+{{< include _readouts.qmd >}}
+
+### Serving
+
+The point of a smaller model is serving it. In vLLM on the same card, the 0.8B answers
+**`{python} serve["one_at_a_time"]` faster** than the 2B one request at a time, and serves
+**`{python} serve["batched"]` cheaper** with every test-clean prompt batched.
+
+::: {.column-margin}
+Settings and every run: [results/serving.md]({{< var repo >}}/blob/main/results/serving.md)
+([#63]({{< var repo >}}/issues/63)).
+:::
+
+## Limitations and what's next
+
+- **One seed and one untuned setup per method.** Paired tests on the same rows make the comparisons
+  fair, but a method sensitive to its learning rate may look worse than it is.
+- **One small teacher.** With a stronger teacher the label-free numbers would likely be higher; the
+  results are about this pair, on this task.
+- **Single-turn tool calls only**, scored by exact match.
+- **Next:** GRPO, reinforcement learning with a reward checked against gold, would ask whether RL
+  adds anything on top of SFT. It is a stretch goal, not run.
+
+::: {.column-margin}
+Every decision, with its alternatives: [docs/adr]({{< var repo >}}/tree/main/docs/adr). Every
+number on this page is computed from [results/]({{< var repo >}}/tree/main/results) when the site
+builds.
+:::

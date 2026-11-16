@@ -1,0 +1,28 @@
+# The story site (#22). Build: uv run --group site quarto render site  (preview: ... quarto preview site)
+project:
+  type: website
+  output-dir: _site
+  render: [index.qmd]
+  resources: [figures/*.json, probe/*.json]
+
+website:
+  title: "Distilling function calling"
+  site-url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
+  repo-url: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+  page-footer:
+    center: "Code, data cards and every decision: [the repository](https://github.com/joaomigueloliveira/qwen-function-calling-distillation)"
+
+execute:
+  echo: false
+  warning: false
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-location: left
+    toc-title: "Contents"
+    reference-location: margin
+    smooth-scroll: true
+    link-external-newwindow: true
