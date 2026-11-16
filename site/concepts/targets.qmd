@@ -1,0 +1,50 @@
+---
+title: "Hard and soft targets"
+subtitle: "What the teacher's probabilities add"
+---
+
+{{< include /_setup.qmd >}}
+
+At every position of an answer, a language model gives a probability to each of the 248,320 tokens
+in its vocabulary, then one is written. A **hard target** trains the student toward the token that
+was written. A **soft target** trains it toward the teacher's whole distribution.
+
+## One real token
+
+{{< include /_token.qmd >}}
+
+## The two losses
+
+With a hard target, the loss at a position is the cross-entropy of the written token $y$ under the
+student's distribution $q$:
+
+$$\mathcal{L}_\text{hard} = -\log q(y).$$
+
+This is the KL divergence from a teacher that puts all its probability on $y$. A soft target puts
+the rest back: the loss is the forward KL from the teacher's distribution $p$,
+
+$$\mathcal{L}_\text{soft} = \mathrm{KL}(p \,\|\, q) = \sum_v p(v) \log \frac{p(v)}{q(v)}.$$
+
+Wherever the teacher is sure, the two are the same. They differ only where it hesitates, as over
+`days` above: there the soft target tells the student that 7 and 5 were reasonable too.
+
+::: {.column-margin}
+[Hinton et al., 2015](https://arxiv.org/abs/1503.02531) call the information in those small
+probabilities "dark knowledge".
+:::
+
+## Storing the teacher's opinion
+
+Storing all 248,320 probabilities at every training token is out of reach: C stores the teacher's
+**top 20** tokens at each position, plus one entry for everything else, so the sums still add up to
+one. At temperature 1 the top 20 hold almost all of the teacher's probability, so little is lost.
+
+Two shortcuts were rejected. **Renormalising** the top 20 to sum to one tells the student every other
+token is impossible, a sharper target than the teacher's. **A higher temperature**, which softens
+both distributions, would put more probability in the tail the top 20 can't store.
+
+::: {.column-margin}
+The top-k bias: [Anshumann et al., 2025](https://arxiv.org/abs/2503.16870). C's design:
+[ADR 0010](../decisions/0010-method-c-stored-top-k-logit-distillation.html). What it found:
+[method C](../experiments/c.qmd).
+:::

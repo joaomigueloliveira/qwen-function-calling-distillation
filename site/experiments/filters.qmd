@@ -1,0 +1,53 @@
+---
+title: "Filtering the teacher's answers"
+subtitle: "Filtered B, grounded B and filtered C"
+---
+
+{{< include /_setup.qmd >}}
+
+**Question.** The teacher is often wrong. What does training only on its better answers buy, and can
+the better answers be found without labels?
+
+**Setup.** B's recipe on a subset of the teacher's answers:
+
+- **Filtered B** keeps the `{python} n(teacher["variants"]["lenient"]["kept"])` that match gold under
+  lenient exact. It uses labels, as a filter: the cost of the teacher's mistakes.
+- **Grounded B** keeps the `{python} n(teacher["variants"]["grounded"]["kept"])` that call offered
+  tools with their required arguments and whose every value is written in the query. The rule never
+  reads gold: they agree with it `{python} pct(teacher["variants"]["grounded"]["lenient"])` of the
+  time, against `{python} pct(teacher["variants"]["unfiltered"]["lenient"])` for all of B's data.
+- **Filtered C** is C's soft targets on filtered B's rows.
+
+::: {.facts}
+```{python}
+table(["Bf", "Bg", "Cf", "B"])
+```
+:::
+
+```{ojs}
+runs = ["Bf", "Bg", "Cf"]
+```
+
+{{< include /_run.qmd >}}
+
+## What they show
+
+- **Filtering against gold gains about two points, not robustly**:
+  `{python} story.claim("Bf", "B", "test-clean")` against B, on fewer rows and fewer GPU-hours.
+  A is still well ahead (`{python} story.claim("A", "Bf", "test-clean")`).
+- **The label-free filter doesn't do the same.** Grounded B ties B
+  (`{python} story.claim("Bg", "B", "test-clean")`) and trails filtered B
+  (`{python} story.claim("Bf", "Bg", "test-clean")`): it gains where every value is in the query, and
+  loses where a value must be worked out, since the rule dropped most of those rows.
+- **On clean rows, soft targets reach unseen tools sooner, not higher.** Filtered C beats filtered B
+  on BFCL at their selected checkpoints (`{python} story.claim("Cf", "Bf", "bfcl")`), but filtered B
+  keeps rising, and at the end of their epochs the two are not significantly different. On
+  test-clean they tie (`{python} story.claim("Cf", "Bf", "test-clean")`).
+
+::: {.column-margin}
+Filtered B: [#60](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/60);
+grounded B: [#74](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/74),
+[#75](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/75);
+filtered C: [#88](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/88).
+Why each runs: [ADR 0007](../decisions/0007-label-free-is-the-main-question.html).
+:::

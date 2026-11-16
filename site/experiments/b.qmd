@@ -1,0 +1,49 @@
+---
+title: "B: SFT on teacher outputs"
+subtitle: "Sequence-level distillation, and the headline method"
+---
+
+{{< include /_setup.qmd >}}
+
+**Question.** If the student simply copies the teacher's answers, how far does it get without a
+single label?
+
+**Setup.** The 2B answers all `{python} n(teacher["rows"])` training queries once, greedily, with
+thinking off (`{python} f"{teacher['gpu_hours']:.1f}"` GPU-hours). Its answers are parsed and
+written back as clean JSON; the `{python} n(teacher["unparsed"])` that don't parse are dropped,
+leaving `{python} n(teacher["variants"]["unfiltered"]["kept"])`. Gold is never read: the teacher's
+answers agree with it on `{python} pct(teacher["variants"]["unfiltered"]["lenient"])` of them, under
+lenient exact. Then the same SFT recipe as A.
+
+::: {.facts}
+```{python}
+table(["B"])
+```
+:::
+
+```{ojs}
+runs = ["B"]
+```
+
+{{< include /_run.qmd >}}
+
+## What it shows
+
+- **The student beats its teacher on xLAM.** `{python} story.score("B")` against
+  `{python} story.score("raw 2B")` on test-clean (`{python} story.claim("B", "raw 2B", "test-clean")`),
+  and `{python} h["share_of_a"]` of what gold labels gain. It isn't format: most of the 2B's
+  answers that fail to parse are a call cut short, not a bracket slip. And it isn't memorisation: no
+  test-clean query is in train, and B's lead is larger on rows whose tools train never offered.
+- **On unseen tools, it stays below the teacher**, though not robustly
+  (`{python} story.claim("B", "raw 2B", "bfcl")`): it gets argument values wrong on tools it never
+  saw. Its BFCL keeps rising after its selected checkpoint, to
+  `{python} pct(last["B"]["bfcl"]["exact"])` at the end of its epoch.
+- **It is the headline method.** C, D and grounded B can't be separated from it on test-clean, and
+  it is the cheapest and simplest of them.
+
+::: {.column-margin}
+The run: [#46](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/46);
+the BFCL curve: [#70](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/70);
+training curves: `{python} wandb("B")`. The headline rule:
+[ADR 0009](../decisions/0009-selection-stays-methods-compared-on-test-clean.html).
+:::

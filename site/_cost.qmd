@@ -1,6 +1,6 @@
 ```{ojs}
 //| echo: false
-fig = FileAttachment("figures/cost-accuracy.json").json()
+fig = d3.json(root + "assets/cost-accuracy.json")
 viewof shown = Inputs.checkbox(Object.keys(names), {label: "Methods", value: ["A", "B", "C", "D"], format: k => names[k]})
 ```
 

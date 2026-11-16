@@ -1,0 +1,69 @@
+---
+title: "What is distillation?"
+subtitle: "Teaching a small model with a bigger one"
+---
+
+{{< include /_setup.qmd >}}
+
+**Knowledge distillation** trains a small model, the *student*, to imitate a larger one, the
+*teacher*. The student is cheaper to run: here the 0.8B answers
+`{python} serve["one_at_a_time"]` faster than the 2B, one request at a time. The question is how
+much of the teacher's skill survives the trip.
+
+It matters most when there are inputs but no answers. Labelling 60,000 function calls by hand is
+expensive; a teacher can answer them all in about `{python} f"{teacher['gpu_hours']:.1f}"`
+GPU-hours. So this project asks what a student can learn **without gold labels**, and compares it
+with the same student trained on them.
+
+::: {.column-margin}
+The idea goes back to [Hinton, Vinyals and Dean (2015)](https://arxiv.org/abs/1503.02531). For text,
+[Kim and Rush (2016)](https://arxiv.org/abs/1606.07947) showed that training on the teacher's
+generated sequences works on its own.
+:::
+
+## How the student is trained
+
+Every method here fine-tunes the same Qwen3.5-0.8B with **LoRA**: the model's weights stay frozen,
+and small low-rank matrices are added to every linear layer and trained instead, about 1.4% of the
+parameters. It fits the 12 GB card with room to spare, and every method shares one setup, so they
+differ only in what the student is trained toward.
+
+The loss is computed on the answer tokens only. The prompt (the tools and the query) is context the
+student reads, not text it learns to write.
+
+::: {.column-margin}
+LoRA: [Hu et al., 2021](https://arxiv.org/abs/2106.09685). The shared setup and why it is untuned:
+[ADR 0006](../decisions/0006-shared-training-setup.html).
+:::
+
+## Three kinds of distillation
+
+Methods differ along two lines: **who writes the text** the student trains on, and **what the
+student is trained toward** at each token of it.
+
+| | Who writes the text | Target at each token | Loss | Extra cost |
+|---|---|---|---|---|
+| **B**, sequence-level ([page](../experiments/b.qmd)) | the teacher | the token it wrote | cross-entropy | one teacher pass over train |
+| **C**, logit ([page](../experiments/c.qmd)) | the teacher | its top 20 probabilities | forward KL | B's pass, plus scoring it |
+| **D**, on-policy ([page](../experiments/d.qmd)) | the student | the teacher's probabilities on it | reverse KL | the teacher at every step |
+
+The first column is the line between **off-policy** (B, C: learning from text someone else wrote)
+and **on-policy** (D: learning from your own attempts). The second is the line between **hard** and
+**soft targets**. Each has its own page:
+
+- [Hard and soft targets](targets.qmd): what the teacher's probabilities add, at one real token.
+- [Off-policy and on-policy](on-policy.qmd): why a student that only reads the teacher's text can
+  still go wrong on its own, and what grading its own answers costs.
+
+## With labels, for reference
+
+**A** is the same recipe on xLAM's gold answers, the reference for what labels buy. Two more methods
+use labels only as a filter on the teacher's answers ([filtered B and C](../experiments/filters.qmd)).
+On test-clean, A reaches `{python} story.score("A")` and the label-free B
+`{python} story.score("B")`: about `{python} h["share_of_a"]` of A's gain over the untrained
+student, without a single label.
+
+::: {.column-margin}
+Why label-free is the main question:
+[ADR 0007](../decisions/0007-label-free-is-the-main-question.html).
+:::

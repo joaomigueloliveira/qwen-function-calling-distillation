@@ -2,15 +2,52 @@
 project:
   type: website
   output-dir: _site
-  render: [index.qmd]
-  resources: [figures/*.json, probe/*.json]
+  pre-render: _prepare.py
+  resources: [assets/*.json]
 
 website:
   title: "Distilling function calling"
   site-url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
   repo-url: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+  page-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: story.qmd
+        text: The story
+      - text: Concepts
+        menu:
+          - concepts/distillation.qmd
+          - concepts/targets.qmd
+          - concepts/on-policy.qmd
+      - text: Data
+        menu:
+          - data/xlam.qmd
+          - data/audit.qmd
+          - data/bfcl.qmd
+      - text: Evaluation
+        menu:
+          - evaluation/metrics.qmd
+          - evaluation/comparing.qmd
+      - text: Experiments
+        menu:
+          - experiments/a.qmd
+          - experiments/b.qmd
+          - experiments/c.qmd
+          - experiments/d.qmd
+          - experiments/filters.qmd
+          - experiments/b-then-d.qmd
+      - href: results.qmd
+        text: Results
+      - href: decisions/index.qmd
+        text: Decisions
+    right:
+      - icon: github
+        href: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+        aria-label: The repository
   page-footer:
-    center: "Code, data cards and every decision: [the repository](https://github.com/joaomigueloliveira/qwen-function-calling-distillation)"
+    center: "Code, data cards and every decision: [the repository](https://github.com/joaomigueloliveira/qwen-function-calling-distillation). Every number on this site is computed from its results/ and data/ when the site builds."
 
 execute:
   echo: false
@@ -22,7 +59,7 @@ format:
     css: styles.css
     toc: true
     toc-location: left
-    toc-title: "Contents"
+    toc-title: "On this page"
     reference-location: margin
     smooth-scroll: true
     link-external-newwindow: true

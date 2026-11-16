@@ -1,5 +1,5 @@
 ```{ojs}
-probe = FileAttachment("probe/forecast-days.json").json()
+probe = d3.json(root + "assets/forecast-days.json")
 ```
 
 ```{ojs}

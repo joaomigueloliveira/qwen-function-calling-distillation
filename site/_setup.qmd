@@ -1,0 +1,63 @@
+```{python}
+import csv
+import json
+
+from IPython.display import Markdown
+
+from fc_distill.story import ROOT, Story
+
+story = Story.load()
+M = story.methods
+splits = {k: len(v) for k, v in json.loads((ROOT / "data" / "splits.json").read_text()).items()}
+with open(ROOT / "data" / "audit" / "test_labels.csv") as f:
+    audit = list(csv.DictReader(f))
+
+
+h = story.headline()
+serve = story.serving()
+verdicts = {v: sum(r["verdict"] == v for r in audit) for v in ("label_ambiguous", "label_wrong")}
+defaults_rows = M["defaults"]["B"]["rows"]
+teacher = M["teacher"]
+last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
+d_budget = M["at_b_budget"]["D"]
+b_clean = M["methods"]["B"]["official"]["test-clean"]["exact"]
+tie_gap = max(abs(M["methods"][k]["official"]["test-clean"]["exact"] - b_clean) for k in ("C", "D"))
+
+
+def bfcl_selected(key: str) -> dict:
+    m = M["methods"][key]
+    return next(c for c in m["checkpoints"] if c["step"] == m["selected"])["bfcl"]
+
+
+def pct(x: float, digits: int = 1) -> str:
+    return f"{100 * x:.{digits}f}%"
+
+
+def n(x: int) -> str:
+    return f"{x:,}"
+
+
+def wandb(key: str) -> Markdown:
+    return Markdown(f"[W&B]({story.facts(key)['wandb']})")
+
+
+def table(keys: list[str]) -> Markdown:
+    head = "| Method | Uses labels | Step | GPU-hours | Validation | Test | Test-clean | BFCL |\n"
+    head += "|---|---|---:|---:|---:|---:|---:|---:|\n"
+    rows = []
+    for k in keys:
+        f = story.facts(k)
+        rows.append(
+            f"| **{k}**, {f['name']} | {f['labels']} | {f['step']} | {f['gpu_hours']} | "
+            f"{f['validation']} | {f['test']} | {f['test_clean']} | {f['bfcl']} |"
+        )
+    return Markdown(head + "\n".join(rows))
+```
+
+```{ojs}
+// One name and colour per method on every page (as in fc_distill.figures), and the path back to
+// the site's root, where the figures' data lives.
+names = ({A: "A", B: "B", Bf: "filtered B", Bg: "grounded B", C: "C", Cf: "filtered C", D: "D", "B→D": "B then D"})
+colors = ({A: "#52514e", B: "#2a78d6", Bf: "#1baf7a", Bg: "#e87ba4", C: "#008300", Cf: "#eda100", D: "#e34948", "B→D": "#eb6834"})
+root = document.querySelector('meta[name="quarto:offset"]')?.content ?? "./"
+```

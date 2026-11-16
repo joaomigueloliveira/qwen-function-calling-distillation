@@ -1,0 +1,44 @@
+---
+title: "A: SFT on gold labels"
+subtitle: "The reference: what labels buy"
+---
+
+{{< include /_setup.qmd >}}
+
+**Question.** How good does the 0.8B get when trained on xLAM's own gold answers? Every label-free
+method is measured against it.
+
+**Setup.** Supervised fine-tuning with LoRA on the `{python} n(splits["train"])` training rows and
+their gold answers, one epoch, the shared setup. The loss is the cross-entropy of each gold answer
+token.
+
+::: {.facts}
+```{python}
+table(["A"])
+```
+:::
+
+```{ojs}
+runs = ["A"]
+```
+
+{{< include /_run.qmd >}}
+
+## What it shows
+
+- **Labels still buy a lot.** A beats every label-free method on test-clean: B by
+  `{python} story.claim("A", "B", "test-clean")` and D by
+  `{python} story.claim("A", "D", "test-clean")`.
+- **Part of it is gold's habits.** A learns which optional arguments xLAM writes out: on the
+  `{python} defaults_rows` test-clean rows that turn on it, it gets
+  `{python} pct(M["defaults"]["A"]["default_made_explicit"], 0)` right, the teacher
+  `{python} pct(M["defaults"]["raw 2B"]["default_made_explicit"], 0)`. That is why methods are compared
+  on test-clean, and why lenient exact is reported.
+- **On unseen tools, labels don't help as much.** On BFCL, A is not significantly different from the
+  2B (`{python} story.claim("A", "raw 2B", "bfcl")`).
+
+::: {.column-margin}
+The run: [#42](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/42);
+training curves: `{python} wandb("A")`. Why A is the reference:
+[ADR 0007](../decisions/0007-label-free-is-the-main-question.html).
+:::

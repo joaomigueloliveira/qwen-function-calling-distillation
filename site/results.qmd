@@ -1,0 +1,64 @@
+---
+title: "Results"
+subtitle: "Every method side by side"
+---
+
+{{< include /_setup.qmd >}}
+
+**Without labels, SFT on the 2B's own answers (B) took Qwen3.5-0.8B from
+`{python} h["before"]` to `{python} h["after"]` exact match on xLAM test-clean, past its teacher's
+`{python} h["teacher"]` and `{python} h["share_of_a"]` of what gold labels gain, in
+`{python} h["gpu_hours"]` GPU-hours on one 12 GB card.** On-policy distillation (D), logit
+distillation (C) and grounded B can't be separated from it on test-clean; D generalises better to
+unseen tools, at `{python} f"{float(story.gpu_hours('D')) / float(story.gpu_hours('B')):.1f}"`× the
+cost.
+
+## Every method
+
+Each at its selected checkpoint: strict exact match on validation, test, test-clean and BFCL.
+
+::: {.facts}
+```{python}
+base = "| Baseline | | | | " + " | ".join(["Validation", "Test", "Test-clean", "BFCL"]) + " |\n|---|---|---|---|---:|---:|---:|---:|\n"
+rows = [
+    f"| {who} | | | 0 | {story.score(who, 'validation')} | {story.score(who, 'test')} | "
+    f"{story.score(who)} | {story.score(who, 'bfcl')} |"
+    for who in ("raw 0.8B", "raw 2B")
+]
+Markdown(base + "\n".join(rows))
+```
+
+```{python}
+table(["B", "Bg", "C", "D", "B→D", "Bf", "Cf", "A"])
+```
+:::
+
+Every comparison between two of them, with its paired test, strict and lenient:
+[results/methods.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/methods.md).
+
+## Accuracy and cost
+
+{{< include /_cost.qmd >}}
+
+## Unseen tools along the runs
+
+{{< include /_bfcl.qmd >}}
+
+## What the methods copy
+
+{{< include /_readouts.qmd >}}
+
+## Serving and the model
+
+In vLLM on the same card, the 0.8B answers **`{python} serve["one_at_a_time"]` faster** than the 2B
+one request at a time, and serves **`{python} serve["batched"]` cheaper** with every test-clean
+prompt batched: the prompts are long and the answers short, so batching narrows the gap.
+
+The headline model is B at step `{python} story.facts("B")["step"]`, a LoRA adapter on the 0.8B.
+Its own serving run and its release on the Hugging Face Hub are
+[#96](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/96).
+
+::: {.column-margin}
+Settings and every run:
+[results/serving.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/serving.md).
+:::

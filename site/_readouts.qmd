@@ -1,5 +1,5 @@
 ```{ojs}
-readouts = FileAttachment("figures/readouts.json").json()
+readouts = d3.json(root + "assets/readouts.json")
 viewof readout = Inputs.radio(new Map([
   ["right on the default rows", "default_made_explicit"],
   ["answers fenced in a code block", "fenced"],

@@ -1,6 +1,7 @@
 _site/
 .quarto/
 *_files/
-
 /.quarto/
 **/*.quarto_ipynb
+decisions/
+assets/

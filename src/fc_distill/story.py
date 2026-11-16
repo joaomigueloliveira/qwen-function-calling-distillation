@@ -12,6 +12,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from fc_distill.figures import wandb_links
+
+# The repository root, so a page in any folder of site/ finds results/ and data/.
+ROOT = Path(__file__).resolve().parents[2]
+
 # The method the README's claim names (ADR 0009, amended by #95).
 HEADLINE = "B"
 
@@ -22,7 +27,7 @@ class Story:
         self.serving_data = serving
 
     @classmethod
-    def load(cls, results: Path = Path("results")) -> "Story":
+    def load(cls, results: Path = ROOT / "results") -> "Story":
         return cls(
             json.loads((results / "methods.json").read_text()),
             json.loads((results / "serving.json").read_text()),
@@ -46,6 +51,21 @@ class Story:
     def gpu_hours(self, key: str) -> str:
         """A method's GPU-hours at its selected checkpoint, as printed ("3.1")."""
         return f"{self._selected(key)['gpu_hours']:.1f}"
+
+    def facts(self, key: str) -> dict[str, str]:
+        """A method's row of the results table, as printed: its selected checkpoint's scores."""
+        m = self.methods["methods"][key]
+        return {
+            "name": m["name"],
+            "labels": "yes" if m["labels"] else "no",
+            "step": str(m["selected"]),
+            "gpu_hours": self.gpu_hours(key),
+            "validation": self.score(key, "validation"),
+            "test": self.score(key, "test"),
+            "test_clean": self.score(key),
+            "bfcl": self.score(key, "bfcl"),
+            "wandb": wandb_links(self.methods, (key,)).get(key, ""),
+        }
 
     def score(self, who: str, split: str = "test-clean") -> str:
         """A model's strict exact on a split, as printed: a baseline, or a method's selected

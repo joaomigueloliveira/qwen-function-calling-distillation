@@ -1,0 +1,61 @@
+---
+title: "Comparing methods"
+subtitle: "Choosing checkpoints, paired tests, and what a GPU-hour includes"
+---
+
+{{< include /_setup.qmd >}}
+
+```{python}
+bt = next(c for c in M["claims"] if (c["a"], c["b"], c["eval"]) == ("B", "raw 2B", "test-clean"))
+```
+
+## Choosing a checkpoint
+
+Each run saves a checkpoint every 500 steps. Every checkpoint is scored on validation, and the best
+by strict exact is the **selected checkpoint**, a tie going to the earlier one. Only that one is run
+on test, test-clean and BFCL. The rule was fixed before any run.
+
+With `{python} n(splits["validation"])` validation rows, neighbouring checkpoints are usually within
+noise of each other, so the pick within a run is itself noisy. That doesn't bias the test numbers,
+which are scored once on the checkpoint chosen; it means a claim that rests on the pick names it.
+
+::: {.column-margin}
+The rule: [ADR 0006](../decisions/0006-shared-training-setup.html); what it can and can't say:
+[ADR 0009](../decisions/0009-selection-stays-methods-compared-on-test-clean.html).
+:::
+
+## Paired tests
+
+Two models are compared on the same rows. Most rows both get right or both get wrong; the
+**McNemar test** looks only at the rows where exactly one is right. B against its teacher on
+test-clean:
+
+| | 2B right | 2B wrong |
+|---|---:|---:|
+| **B right** | | **`{python} bt["only_a_right"]`** |
+| **B wrong** | **`{python} bt["only_b_right"]`** | |
+
+If the two were equally good, those `{python} bt["only_a_right"] + bt["only_b_right"]` rows would
+split about evenly. A split of `{python} bt["only_a_right"]` against `{python} bt["only_b_right"]`
+is very unlikely by chance.
+
+## Many claims at once
+
+The README and this site make `{python} len(M["claims"])` such claims. Testing many raises the chance
+that one looks significant by luck, so every claim's p-value is adjusted with **Holm's method** over
+all of them, and a claim is called significant only after the adjustment. The family grows as methods
+are added, so an earlier claim's adjusted p-value can only rise.
+
+## Methods tie, then cost decides
+
+Where test-clean can't separate methods, no winner is named; the cheaper is published, and when costs
+are within 10% of each other, the simpler pipeline. That is why the headline method is B.
+
+## What a GPU-hour includes
+
+Every method's cost starts at zero on the one RTX 3060 and counts everything it needs: the teacher
+answering train once (`{python} f"{teacher['gpu_hours']:.1f}"` GPU-hours, for every method trained
+on teacher outputs), C's extra pass scoring the teacher's top 20, D's sampling and the teacher's
+grading at every step, and training. Validation scoring is the same for every method and isn't
+counted. Each label-free method is also reported at **B's budget**: its best checkpoint within B's
+GPU-hours.

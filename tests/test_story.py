@@ -17,12 +17,19 @@ METHODS: dict[str, Any] = {
             "official": {"test-clean": {"exact": 0.9323}, "bfcl": {"exact": 0.845}},
         },
         "B": {
+            "name": "SFT on teacher outputs",
+            "labels": False,
+            "wandb_run": "z8e95dog",
             "checkpoints": [
                 {"step": 1000, "gpu_hours": 2.554, "exact": 0.7},
                 {"step": 1500, "gpu_hours": 3.119, "exact": 0.708},
             ],
             "selected": 1500,
-            "official": {"test-clean": {"exact": 0.8338}, "bfcl": {"exact": 0.791}},
+            "official": {
+                "test": {"exact": 0.712},
+                "test-clean": {"exact": 0.8338},
+                "bfcl": {"exact": 0.791},
+            },
         },
     },
 }
@@ -95,4 +102,19 @@ def test_serving_gives_the_students_speed_up_over_the_teacher() -> None:
     assert Story(METHODS, SERVING).serving() == {
         "batched": "1.9\u00d7",
         "one_at_a_time": "2.4\u00d7",
+    }
+
+
+def test_facts_gives_a_methods_row_of_the_results_table() -> None:
+    assert Story(METHODS, SERVING).facts("B") == {
+        "name": "SFT on teacher outputs",
+        "labels": "no",
+        "step": "1500",
+        "gpu_hours": "3.1",
+        "validation": "70.8%",
+        "test": "71.2%",
+        "test_clean": "83.4%",
+        "bfcl": "79.1%",
+        "wandb": "https://forge.coreweave.com/wandb/joaomigueloliveira30/"
+        "qwen-function-calling-distillation/runs/z8e95dog",
     }

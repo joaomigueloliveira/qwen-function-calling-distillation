@@ -1,0 +1,31 @@
+```{ojs}
+runData = Promise.all([d3.json(root + "assets/cost-accuracy.json"), d3.json(root + "assets/bfcl-along.json")])
+runPlots = {
+  const [cost, bfcl] = runData;
+  const keys = [...runs, ...(runs.includes("B") ? [] : ["B"])];
+  const along = (rows, label, domain) => Plot.plot({
+    width: Math.min(width, 380), height: 260, marginRight: 70, style: {fontSize: "12px"},
+    x: {label: "GPU-hours →"}, y: {label: label, domain, grid: true},
+    marks: [
+      Plot.line(rows, {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method],
+        strokeWidth: d => runs.includes(d.method) ? 2.5 : 1, strokeOpacity: d => runs.includes(d.method) ? 1 : 0.45}),
+      Plot.dot(rows.filter(d => d.pick), {x: "gpu_hours", y: d => 100 * d.exact, r: 7, stroke: d => colors[d.method]}),
+      Plot.dot(rows, {x: "gpu_hours", y: d => 100 * d.exact, fill: d => colors[d.method], r: 3,
+        tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (selected)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours · ${(100 * d.exact).toFixed(1)}%`}),
+      Plot.text(Array.from(d3.group(rows, d => d.method).values(), g => g[g.length - 1]),
+        {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 6, textAnchor: "start"}),
+    ],
+  });
+  const val = cost.data.checkpoints.filter(d => keys.includes(d.method));
+  const bf = bfcl.data.runs.filter(d => keys.includes(d.method));
+  const box = html`<div style="display:flex;flex-wrap:wrap;gap:12px"></div>`;
+  box.append(along(val, "↑ validation exact (%)", [55, 90]));
+  if (bf.some(d => runs.includes(d.method))) box.append(along(bf, "↑ BFCL exact (%)", [70, 88]));
+  return box;
+}
+```
+
+::: {.caption}
+Along the run: every checkpoint on validation, and on BFCL where it was scored along the run. Rings
+mark the selected checkpoint; B is drawn faintly for reference. Hover for details.
+:::

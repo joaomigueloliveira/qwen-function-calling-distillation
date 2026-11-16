@@ -1,5 +1,5 @@
 ```{ojs}
-bfcl = FileAttachment("figures/bfcl-along.json").json()
+bfcl = d3.json(root + "assets/bfcl-along.json")
 Plot.plot({
   width: Math.min(width, 760), height: 340, marginRight: 90, style: {fontSize: "13px"},
   x: {label: "GPU-hours on one RTX 3060 →"},

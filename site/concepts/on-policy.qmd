@@ -1,0 +1,52 @@
+---
+title: "Off-policy and on-policy"
+subtitle: "Learning from the teacher's text, or from your own"
+---
+
+{{< include /_setup.qmd >}}
+
+B and C learn from text the teacher wrote: they are **off-policy**. At test time, though, the student
+writes its own answers, one token after another, each conditioned on its own earlier tokens. One
+early slip, a wrong function name or a missing argument, puts it in a place the teacher's text never
+went, and it has never learned how to recover. This mismatch is called *exposure bias*.
+
+An **on-policy** method trains on the student's own attempts. In D, at every step:
+
+1. the student writes an answer to a training query (sampling at temperature 1);
+2. the teacher reads that answer and gives its probability for every next token, at every
+   position;
+3. the student is pushed toward the teacher's distribution, on its own text.
+
+Unlike reinforcement learning, which gets one reward per answer, every token gets feedback, so a
+wrong answer still says where it went wrong.
+
+::: {.column-margin}
+[Thinking Machines, 2025](https://thinkingmachines.ai/blog/on-policy-distillation/);
+[GKD, Agarwal et al., 2024](https://arxiv.org/abs/2306.13649).
+:::
+
+## Forward and reverse KL
+
+The loss turns around too. D uses the **reverse KL**, from the student's distribution $q$ to the
+teacher's $p$:
+
+$$\mathrm{KL}(q \,\|\, p) = \sum_v q(v) \log \frac{q(v)}{p(v)}.$$
+
+The forward KL of C, $\mathrm{KL}(p \,\|\, q)$, is large wherever the teacher puts probability and
+the student doesn't: it makes the student *cover* every option the teacher considers. The reverse
+KL is large wherever the student puts probability and the teacher doesn't: it makes the student
+avoid what the teacher would never write, and settle on what the teacher prefers. For a small
+student that can't match everything, that is usually the better trade.
+
+## What it costs
+
+The teacher has to score every answer the student writes, during training, so D runs both models
+and a sampling engine at once. On the 12 GB card: TRL's `DistillationTrainer`, the student sampling
+in vLLM next to training, and the 2B in the same process. D's epoch took
+`{python} f"{last['D']['gpu_hours']:.1f}"` GPU-hours, against
+`{python} f"{last['B']['gpu_hours']:.1f}"` for B's, the teacher's pass included.
+
+::: {.column-margin}
+D's design: [ADR 0008](../decisions/0008-method-d-setup.html). What it found:
+[method D](../experiments/d.qmd).
+:::
