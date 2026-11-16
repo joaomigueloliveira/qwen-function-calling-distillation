@@ -1,0 +1,49 @@
+name: Site
+
+# Builds the story site (site/) on every PR, and publishes it to GitHub Pages from main. Every number
+# on it is computed from results/ and data/ at build time (fc_distill.story, fc-figures).
+on:
+  push:
+    branches: [main]
+    paths: [site/**, results/**, data/**, src/fc_distill/**, pyproject.toml, uv.lock, .github/workflows/site.yml]
+  pull_request:
+    paths: [site/**, results/**, data/**, src/fc_distill/**, pyproject.toml, uv.lock, .github/workflows/site.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync --locked --group site
+      # The figures' data comes from results/methods.json, so it is rebuilt before the site.
+      - run: uv run fc-figures
+      - run: uv run --group site quarto render site
+        env:
+          QUARTO_PYTHON: .venv/bin/python
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/_site
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

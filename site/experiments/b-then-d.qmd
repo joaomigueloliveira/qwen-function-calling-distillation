@@ -1,0 +1,44 @@
+---
+title: "B then D"
+subtitle: "On-policy distillation on top of B"
+---
+
+{{< include /_setup.qmd >}}
+
+::: {.key}
+**Key result.** D's loss on top of B doesn't help: **`{python} story.score("B→D")`** on test-clean,
+against B's `{python} story.score("B")`.
+:::
+
+**Question.** Thinking Machines start on-policy distillation from a fine-tuned checkpoint. Does D's
+loss improve B, rather than replace it?
+
+**Setup.** B's selected checkpoint, continued with D's loss at a quarter of D's learning rate, with
+the cosine schedule over a full epoch but stopped at step 1,000; checkpoints at steps 100 to 500 and
+at 1,000, to see whether it gains fast. Reported as a pipeline,
+not as method D.
+
+```{python}
+table(["B→D", "B"])
+```
+
+```{ojs}
+runs = ["B→D"]
+```
+
+{{< include /_run.qmd >}}
+
+## What it shows
+
+- **It doesn't help.** No checkpoint beat B on validation. The selected one is behind B on
+  test-clean under strict exact (`{python} story.claim("B→D", "B", "test-clean")`), and level under
+  lenient: it moves B toward the teacher's conventions about defaults.
+- **On unseen tools it is not significantly different from B, and below D**
+  (`{python} story.claim("B→D", "D", "bfcl")`). One learning rate and one seed; the run wasn't
+  resumed.
+
+::: {.column-margin}
+The run: [#58](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/58);
+why it is a pipeline: [ADR 0008](../decisions/0008-method-d-setup.html); training curves:
+`{python} wandb("B→D")`.
+:::

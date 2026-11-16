@@ -6,6 +6,9 @@ than the one you want to ship. This project trains Qwen3.5-0.8B from a Qwen3.5-2
 consumer GPU, and compares the label-free methods with SFT on gold labels, the reference for what
 labels buy (ADR 0007).
 
+**The story, start to finish, with interactive figures:
+[joaomigueloliveira.github.io/qwen-function-calling-distillation](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/).**
+
 | Method | | Training uses labels |
 |---|---|---|
 | **A** | SFT on gold labels | yes: the reference |
@@ -275,6 +278,7 @@ uv run fc-eval --rescore runs/eval-test-Qwen_Qwen3.5-0.8B       # re-score a sav
 uv run fc-report                  # results/baselines.{json,md} from the test and BFCL runs
 uv run --no-sync fc-report --methods   # results/methods.{json,md}: each method's checkpoints
 uv run fc-figures                 # docs/figures/: figures from results/methods.json, JSON + SVG
+uv run --group site quarto preview site   # the story site (site/), numbers from results/ at build time
 uv run fc-serve --model Qwen/Qwen3.5-0.8B --max-num-seqs 256   # serving cost -> runs/serve-*
 uv run --no-sync fc-serve --report     # results/serving.{json,md}: the 0.8B against the 2B
 
@@ -334,6 +338,7 @@ src/fc_distill/
   report.py     baselines report with intervals and McNemar tests (fc-report)
   methods.py    method results: checkpoint selection, official scores, teacher-output counts (fc-report --methods)
   figures.py    figures from results/methods.json for the README and the site (fc-figures)
+  story.py      the numbers the story site quotes, read from results/ at build time
   sft.py        methods A, B and C: LoRA training on gold labels, teacher outputs or the teacher's top 20 (fc-sft)
   teacher_topk.py  method C's teacher pass: the 2B's top-20 log-probs on B's training tokens (fc-teacher-topk)
   kd.py         method C's loss: forward KL over the stored top 20 plus a rest entry

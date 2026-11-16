@@ -1,0 +1,76 @@
+# The story site (#22). Build: uv run --group site quarto render site  (preview: ... quarto preview site)
+project:
+  type: website
+  output-dir: _site
+  pre-render: _prepare.py
+  resources: [assets/*.json]
+
+website:
+  title: "Distilling function calling"
+  site-url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
+  repo-url: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+  page-navigation: true
+  bread-crumbs: true
+  navbar:
+    title: "fc-distill"
+    left:
+      - href: story.qmd
+        text: The story
+      - href: results.qmd
+        text: Results
+      - href: decisions/index.qmd
+        text: Decisions
+    right:
+      - icon: github
+        href: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+        aria-label: The repository
+  sidebar:
+    style: docked
+    collapse-level: 1
+    contents:
+      - href: index.qmd
+        text: Home
+      - story.qmd
+      - results.qmd
+      - section: "Concepts"
+        contents:
+          - concepts/distillation.qmd
+          - concepts/targets.qmd
+          - concepts/on-policy.qmd
+      - section: "Data"
+        contents:
+          - data/xlam.qmd
+          - data/audit.qmd
+          - data/bfcl.qmd
+      - section: "Evaluation"
+        contents:
+          - evaluation/metrics.qmd
+          - evaluation/comparing.qmd
+      - section: "Experiments"
+        contents:
+          - experiments/a.qmd
+          - experiments/b.qmd
+          - experiments/c.qmd
+          - experiments/d.qmd
+          - experiments/filters.qmd
+          - experiments/b-then-d.qmd
+      - href: decisions/index.qmd
+        text: Decisions
+  page-footer:
+    center: "Code, data cards and every decision: [the repository](https://github.com/joaomigueloliveira/qwen-function-calling-distillation). Every number on this site is computed from its results/ and data/ when the site builds."
+
+execute:
+  echo: false
+  warning: false
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-location: right
+    toc-title: "On this page"
+    include-in-header: _fonts.html
+    reference-location: margin
+    smooth-scroll: true
+    link-external-newwindow: true

@@ -1,0 +1,53 @@
+---
+title: "The metrics"
+subtitle: "What counts as right, and why each number exists"
+---
+
+{{< include /_setup.qmd >}}
+
+Every score here is computed by a deterministic scorer: no model judges another. An answer is parsed
+into a list of calls, `{name, arguments}`, and compared with the gold calls.
+
+| Metric | What it measures | Why it exists |
+|---|---|---|
+| `parse_ok` | the answer parses as JSON calls | separates "wrote broken JSON" from "called the wrong thing" |
+| **`exact`** | the same calls as gold, in any order (`5 == 5.0`, `true != 1`) | the headline: a call is right or it isn't |
+| `lenient_exact` | `exact`, but ignoring optional arguments at their default, on either side | gold writes some defaults out and leaves others out; by the tool spec both are the same call |
+| `names` | the right functions, each the right number of times | function choice, apart from values |
+| `arg_f1` | F1 over `(function, argument, value)` triples | partial credit, to see how wrong a wrong answer is |
+
+::: {.column-margin}
+The scorer and its rules: [the README](https://github.com/joaomigueloliveira/qwen-function-calling-distillation#task).
+:::
+
+## Strict and lenient
+
+Strict exact is the headline, because it is the one a user would care about: the right calls with
+the right values. But on the `{python} defaults_rows` test-clean rows where gold and a model differ
+only by an optional argument at its default, strict exact rewards guessing xLAM's habit, not calling
+tools well. Lenient exact is reported beside it, and every claim on xLAM is checked under both
+([what the methods copy](../results.qmd#what-the-methods-copy)).
+
+## Parsing
+
+A model may wrap its JSON in a code fence; then only the fence's contents are read. Without a fence,
+any text around the JSON fails, since a tool-calling system would reject it too. Answers that span
+several lines parse like any other. Reasoning blocks are removed first, though thinking is off for
+every model here.
+
+## Slices
+
+Every score is also broken down by **call pattern** (one call, several, the same call in parallel),
+by **distractor tools** (how many offered tools the answer doesn't use) and by **argument source**
+(whether every value is written in the query). A slice is reported on its own only with at least 300
+rows; smaller ones are flagged.
+
+## Intervals
+
+Every score comes with a 95% Wilson interval. On `{python} n(splits["test-clean"])` rows, a score
+near 80% carries about ±2 points; a comparison between two models on the same rows is tighter, and
+is made with a paired test ([comparing methods](comparing.qmd)).
+
+On [BFCL](../data/bfcl.qmd), where each argument has a list of acceptable values, `exact` uses the
+same strict comparison and there is no lenient version: BFCL already marks which arguments may be
+left out.

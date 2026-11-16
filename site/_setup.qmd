@@ -1,0 +1,90 @@
+```{python}
+import csv
+import json
+
+from IPython.display import HTML, Markdown
+
+from fc_distill.figures import LABELS
+from fc_distill.story import HEADLINE, ROOT, Story
+
+story = Story.load()
+M = story.methods
+splits = {k: len(v) for k, v in json.loads((ROOT / "data" / "splits.json").read_text()).items()}
+with open(ROOT / "data" / "audit" / "test_labels.csv") as f:
+    audit = list(csv.DictReader(f))
+
+
+h = story.headline()
+serve = story.serving()
+verdicts = {v: sum(r["verdict"] == v for r in audit) for v in ("label_ambiguous", "label_wrong")}
+defaults_rows = M["defaults"]["B"]["rows"]
+teacher = M["teacher"]
+last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
+d_budget = M["at_b_budget"]["D"]
+d_cost = next(c for c in M["methods"]["D"]["checkpoints"] if c["step"] == M["methods"]["D"]["selected"])["gpu_hours"]
+b_cost = next(c for c in M["methods"]["B"]["checkpoints"] if c["step"] == M["methods"]["B"]["selected"])["gpu_hours"]
+b_clean = M["methods"]["B"]["official"]["test-clean"]["exact"]
+tie_gap = max(abs(M["methods"][k]["official"]["test-clean"]["exact"] - b_clean) for k in ("C", "D"))
+
+
+def bfcl_selected(key: str) -> dict:
+    m = M["methods"][key]
+    return next(c for c in m["checkpoints"] if c["step"] == m["selected"])["bfcl"]
+
+
+def pct(x: float, digits: int = 1) -> str:
+    return f"{100 * x:.{digits}f}%"
+
+
+def n(x: int) -> str:
+    return f"{x:,}"
+
+
+def wandb(key: str) -> Markdown:
+    return Markdown(f"[W&B]({story.facts(key)['wandb']})")
+
+
+def badge_html(key: str, title: str = "") -> str:
+    css = {"B→D": "BD"}.get(key, key)
+    tip = f' title="{title}"' if title else ""
+    return f'<span class="m m-{css}"{tip}>{LABELS[key]}</span>'
+
+
+def badge(key: str) -> Markdown:
+    """A method's name as a badge in its chart colour, for prose."""
+    return Markdown(badge_html(key))
+
+
+def table(keys: list[str], baselines: bool = False) -> HTML:
+    """The results table for `keys`, each at its selected checkpoint; baselines on top if asked."""
+    cols = ["Validation", "Test", "Test-clean", "BFCL"]
+    head = "".join(f"<th>{c}</th>" for c in ["Method", "Labels", "Step", "GPU-h", *cols])
+    rows = []
+    if baselines:
+        for who, what in (("raw 0.8B", "the student, untrained"), ("raw 2B", "the teacher")):
+            scores = [story.score(who, s) for s in ("validation", "test", "test-clean", "bfcl")]
+            cells = [f'<span title="{what}">{who}</span>', "", "", "0", *scores]
+            rows.append('<tr class="baseline">' + _cells(cells) + "</tr>")
+    for k in keys:
+        f = story.facts(k)
+        cells = [badge_html(k, f["name"]), f["labels"], f["step"], f["gpu_hours"],
+                 f["validation"], f["test"], f["test_clean"], f["bfcl"]]
+        cls = ' class="headline"' if k == HEADLINE else ""
+        rows.append(f"<tr{cls}>" + _cells(cells) + "</tr>")
+    return HTML(
+        f'<div class="table-scroll"><table class="results"><thead><tr>{head}</tr></thead>'
+        f"<tbody>{''.join(rows)}</tbody></table></div>"
+    )
+
+
+def _cells(cells: list[str]) -> str:
+    return "".join(f"<td>{c}</td>" for c in cells)
+```
+
+```{ojs}
+// One name and colour per method on every page (as in fc_distill.figures), and the path back to
+// the site's root, where the figures' data lives.
+names = ({A: "A", B: "B", Bf: "filtered B", Bg: "grounded B", C: "C", Cf: "filtered C", D: "D", "B→D": "B then D"})
+colors = ({A: "#52514e", B: "#2a78d6", Bf: "#1baf7a", Bg: "#e87ba4", C: "#008300", Cf: "#eda100", D: "#e34948", "B→D": "#eb6834"})
+root = document.querySelector('meta[name="quarto:offset"]')?.content ?? "./"
+```

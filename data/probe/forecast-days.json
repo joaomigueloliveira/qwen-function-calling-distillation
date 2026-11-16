@@ -1,0 +1,29 @@
+{
+ "about": "Next-token probabilities of Qwen3.5-2B (teacher) and the untrained Qwen3.5-0.8B (student) at one answer position, measured 2026-11-13 with transformers, thinking off, teacher-forced on the 2B's greedy answer. The query is made up, not an xLAM row. Each model's probabilities are its softmax over the full 248,320-token vocabulary at T = 1.",
+ "query": "Give me the forecast for Lisbon.",
+ "answer": "[{\"name\": \"get_forecast\", \"arguments\": {\"city\": \"Lisbon\", \"days\": 3}}]",
+ "position": "the token after \"days\": ",
+ "written": "3",
+ "tokens": [
+  {
+   "token": "3",
+   "teacher": 0.5843,
+   "student": 0.1234
+  },
+  {
+   "token": "7",
+   "teacher": 0.3127,
+   "student": 0.8046
+  },
+  {
+   "token": "5",
+   "teacher": 0.0896,
+   "student": 0.0583
+  },
+  {
+   "token": "anything else",
+   "teacher": 0.0134,
+   "student": 0.0137
+  }
+ ]
+}

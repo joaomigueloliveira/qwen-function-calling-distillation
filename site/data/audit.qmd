@@ -1,0 +1,71 @@
+---
+title: "The label audit and test-clean"
+subtitle: "When the gold answer is the problem"
+---
+
+{{< include /_setup.qmd >}}
+
+```{python}
+from collections import Counter
+
+audited = len(audit)
+verdict_counts = Counter(r["verdict"] for r in audit)
+categories = Counter(r["category"] for r in audit if r["category"])
+unsound = verdict_counts["label_ambiguous"] + verdict_counts["label_wrong"]
+```
+
+Before any training, the baselines' mistakes looked suspicious: models of 0.8B, 2B and 4B parameters
+made about the same number of wrong-argument errors. Errors that don't shrink with a model five
+times larger point at the answers, not the models. Is "3% interest" `3` or `0.03`?
+
+So every test row that **any** baseline got wrong was audited, `{python} n(audited)` of the
+`{python} n(splits["test"])`, most of them by hand, with one question: *would a careful
+person, reading only the query and the tool specs, write this gold answer?* Labelling was blind to
+which model erred.
+
+::: {.column-margin}
+The rubric: [docs/label-audit.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/docs/label-audit.md).
+Why test labels are never edited:
+[ADR 0002](../decisions/0002-test-labels-never-edited.html).
+:::
+
+## What it found
+
+| Verdict | Rows |
+|---|---:|
+| Sound: what a careful person would write | `{python} n(verdict_counts["label_sound"])` |
+| Ambiguous: one reasonable answer among several | `{python} n(verdict_counts["label_ambiguous"])` |
+| Wrong: contradicts the query or specs, or makes a value up | `{python} n(verdict_counts["label_wrong"])` |
+
+The most common reasons, among the audited rows:
+
+```{python}
+labels = {
+    "unclear units or format": "a format the spec leaves open (`UK` or `GB`, casing)",
+    "default made explicit": "gold and a model differ only by an optional argument at its default",
+    "underspecified query": "the query doesn't fix the value (\"last week\", with no date)",
+    "wrong value": "a wrong or made-up value (`YOUR_API_KEY`)",
+}
+Markdown(
+    "| Reason | Rows |\n|---|---:|\n"
+    + "\n".join(f"| {labels.get(c, c)} | {categories[c]:,} |" for c, _ in categories.most_common(4))
+)
+```
+
+## test-clean
+
+**test-clean** is test without the ambiguous and wrong rows: `{python} n(splits["test-clean"])`
+rows. It is where methods are compared, and it tells a different story from raw test: a method
+can gain on raw test by learning gold's quirks, such as which of two reasonable answers xLAM chose.
+The `{python} n(unsound)` unsound rows are a lower bound, since rows every model got right are
+assumed sound.
+
+Test's labels are never edited, so numbers on raw test stay comparable with other work. Train and
+validation keep their noise too: removing it would take judgement no rule captures, and the
+teacher's answers, which the label-free methods train on, never read gold anyway.
+
+::: {.column-margin}
+Train and validation keep their label noise:
+[ADR 0005](../decisions/0005-train-and-validation-keep-label-noise.html). The full audit:
+[results/label-audit.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/label-audit.md).
+:::

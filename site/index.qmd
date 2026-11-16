@@ -1,0 +1,70 @@
+---
+title: "Distilling function calling without labels"
+subtitle: "Qwen3.5-2B → Qwen3.5-0.8B on xLAM-60k, on one 12 GB GPU"
+toc: false
+---
+
+{{< include /_setup.qmd >}}
+
+
+::: {.hero}
+::: {.claim}
+Trained only on a 2B model's answers, a 0.8B model calls tools better than its teacher, in
+`{python} h["gpu_hours"]` GPU-hours on one consumer GPU.
+:::
+
+::: {.what}
+A study by João Oliveira: a test-set label audit, four ways of distilling a model and three
+filters, paired statistical tests, and a serving benchmark, all on one RTX 3060.
+:::
+
+::: {.cta}
+[Read the story](story.qmd) [See every result](results.qmd){.secondary}
+:::
+:::
+
+::: {.tiles}
+::: {.tile}
+[`{python} h["after"]`]{.n} [the 0.8B after distillation, xLAM test-clean]{.l}
+:::
+::: {.tile}
+[`{python} h["teacher"]`]{.n} [its 2B teacher]{.l}
+:::
+::: {.tile}
+[`{python} h["before"]`]{.n} [the 0.8B before]{.l}
+:::
+::: {.tile}
+[`{python} h["gpu_hours"]` h]{.n} [GPU-hours on an RTX 3060, the teacher's work included]{.l}
+:::
+:::
+
+::: {.takeaways}
+1. **Copying the teacher's answers is enough.** Supervised fine-tuning on the 2B's own answers (B)
+   takes the 0.8B from `{python} h["before"]` to `{python} h["after"]` exact match, past the
+   teacher's `{python} h["teacher"]` and `{python} h["share_of_a"]` of what training on gold labels gains.
+2. **Three kinds of distillation tie.** Matching the teacher's probabilities (C) and learning on the
+   student's own answers (D) land within `{python} f"{100 * tie_gap:.1f}"` points of B. They differ in cost, and on tools the student
+   never saw.
+3. **Labels still buy a lot**: the same recipe on gold answers reaches `{python} h["with_labels"]`.
+4. **The student serves `{python} serve["one_at_a_time"]` faster** than its teacher, one request at a time.
+:::
+
+{{< include _cost.qmd >}}
+
+## Explore the project
+
+::: {.sections}
+[**The story** the question, the methods and what we found, start to finish](story.qmd)
+
+[**Concepts** what distillation is: hard and soft targets, off-policy and on-policy](concepts/distillation.qmd)
+
+[**Data** xLAM-60k, the label audit behind test-clean, and BFCL for unseen tools](data/xlam.qmd)
+
+[**Evaluation** the metrics, why each exists, and how methods are compared](evaluation/metrics.qmd)
+
+[**Experiments** one page per method: setup, result, and what it shows](experiments/b.qmd)
+
+[**Results** every method side by side, serving and the model](results.qmd)
+
+[**Decisions** every design decision, with the options it weighed](decisions/index.qmd)
+:::

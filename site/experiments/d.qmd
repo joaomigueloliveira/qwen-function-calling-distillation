@@ -1,0 +1,53 @@
+---
+title: "D: on-policy distillation"
+subtitle: "The student writes; the teacher grades every token"
+---
+
+{{< include /_setup.qmd >}}
+
+::: {.key}
+**Key result.** D ties B on test-clean (**`{python} story.score("D")`**) and leads B's selected
+checkpoint on unseen tools (`{python} story.score("D", "bfcl")` on BFCL), at
+`{python} f"{d_cost / b_cost:.1f}"`× the cost.
+:::
+
+**Question.** Does learning on its own answers, graded token by token by the teacher, beat copying
+the teacher's text? ([Off-policy and on-policy](../concepts/on-policy.qmd).)
+
+**Setup.** From the untrained 0.8B, every training query once: the student samples an answer at
+temperature 1, the 2B scores every token of it, and the loss is the reverse KL over the whole
+vocabulary. Gold is never read. TRL's `DistillationTrainer`, with the student sampling in vLLM next
+to training and the teacher, on the 12 GB card.
+
+```{python}
+table(["D", "B"])
+```
+
+```{ojs}
+runs = ["D"]
+```
+
+{{< include /_run.qmd >}}
+
+## What it shows
+
+- **It ties B on xLAM, in a different way.** `{python} story.claim("D", "B", "test-clean")`. D is
+  better at choosing functions and completing every call; B is better at xLAM's habit of writing
+  defaults out (`{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)` against
+  `{python} pct(M["defaults"]["D"]["default_made_explicit"], 0)` on those rows).
+- **On unseen tools it is above B's selected checkpoint**: `{python} story.score("D", "bfcl")` on
+  BFCL (`{python} story.claim("D", "B", "bfcl")`), and not significantly different from the 2B. But
+  its BFCL rises with training, and B's keeps rising past its own pick to a score D doesn't
+  significantly beat, so with one seed the data can't tell on-policy learning from more training.
+- **Per GPU-hour it shows no advantage.** At B's budget (step `{python} d_budget["step"]`,
+  `{python} f"{d_budget['gpu_hours']:.1f}"` GPU-hours) it scores
+  `{python} pct(d_budget["official"]["test-clean"]["exact"])` on test-clean
+  (`{python} story.claim(f"D@{d_budget['step']}", "B", "test-clean")`). Its selected checkpoint cost
+  `{python} story.gpu_hours("D")` GPU-hours.
+
+::: {.column-margin}
+The design: [ADR 0008](../decisions/0008-method-d-setup.html); the run and its reading:
+[#54](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/54),
+[#70](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/70);
+training curves: `{python} wandb("D")`.
+:::
