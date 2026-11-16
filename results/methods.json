@@ -175,6 +175,7 @@
    "labels": true,
    "after": null,
    "train_run": "train-sft-gold-r16-b4x4-n54561-gl-s0",
+   "wandb_run": "hmjki6iw",
    "checkpoints": [
     {
      "step": 500,
@@ -392,6 +393,7 @@
    "labels": false,
    "after": null,
    "train_run": "train-sft-teacher-r16-b4x4-n52424-gl-s0",
+   "wandb_run": "z8e95dog",
    "checkpoints": [
     {
      "step": 500,
@@ -671,6 +673,7 @@
    "labels": true,
    "after": null,
    "train_run": "train-sft-teacher-lenient-r16-b4x4-n37696-gl-s0",
+   "wandb_run": "ejigjxko",
    "checkpoints": [
     {
      "step": 500,
@@ -886,6 +889,7 @@
    "labels": false,
    "after": null,
    "train_run": "train-sft-teacher-grounded-r16-b4x4-n33918-gl-s0",
+   "wandb_run": "v1r4ks64",
    "checkpoints": [
     {
      "step": 500,
@@ -1062,6 +1066,7 @@
    "labels": false,
    "after": null,
    "train_run": "train-sft-teacher-topk-r16-b4x4-n52424-gl-s0",
+   "wandb_run": "0y6xmmx9",
    "checkpoints": [
     {
      "step": 500,
@@ -1281,6 +1286,7 @@
    "labels": true,
    "after": null,
    "train_run": "train-sft-teacher-topk-lenient-r16-b4x4-n37696-gl-s0",
+   "wandb_run": "sflzd7z6",
    "checkpoints": [
     {
      "step": 500,
@@ -1496,6 +1502,7 @@
    "labels": false,
    "after": null,
    "train_run": "train-opd-r16-b4x4-n54561-s0",
+   "wandb_run": "9jf723fw",
    "checkpoints": [
     {
      "step": 500,
@@ -1775,6 +1782,7 @@
    "labels": false,
    "after": "B",
    "train_run": "train-opd-from-sft-teacher-r16-b4x4-n52424-gl-s0-1500-r16-b4x4-n54561-s0",
+   "wandb_run": "ra29h5ha",
    "checkpoints": [
     {
      "step": 100,

@@ -73,6 +73,21 @@ nondeterminism in vLLM).
 | **Filtered C**: 0.8B, logit distillation on teacher outputs that match gold | yes, as a filter | 3.63 | 73.5 [71.5, 75.3] | 84.9 [83.1, 86.6] | 84.1 [81.7, 86.2] |
 | **A**: 0.8B, SFT on gold labels | yes | 3.83 | 84.8 [83.1, 86.3] | 93.2 [91.9, 94.3] | 84.5 [82.1, 86.6] |
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cost-accuracy-dark.svg">
+  <img alt="Left: validation exact match against GPU-hours along the runs of A, B, C and D. Right: each method's pick on test-clean with 95% intervals; the label-free methods sit between 81.7% and 83.4%, above the 2B teacher's 76.8%." src="docs/figures/cost-accuracy.svg">
+</picture>
+
+*Accuracy against GPU-hours.* Left: validation at every checkpoint, the teacher's passes included;
+rings mark each run's pick. Right: each pick on test-clean; hollow markers used labels. Data:
+[`docs/figures/cost-accuracy.json`](docs/figures/cost-accuracy.json), from `results/methods.json`
+(`uv run fc-figures`). Training curves on W&B:
+[A](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw),
+[B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog),
+[C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9),
+[D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw).
+More figures (BFCL along the runs, the default and format readouts): [`docs/figures/`](docs/figures/).
+
 Each claim below compares two models on the same rows with a paired McNemar test; "Holm" is that
 p-value adjusted over every claim listed in [`results/methods.md`](results/methods.md#readme-claims),
 which also gives each one under lenient exact. "Not significantly different" means the test can't
@@ -257,6 +272,7 @@ uv run fc-eval --model Qwen/Qwen3.5-0.8B --split bfcl         # unseen tools
 uv run fc-eval --rescore runs/eval-test-Qwen_Qwen3.5-0.8B       # re-score a saved run, no GPU
 uv run fc-report                  # results/baselines.{json,md} from the test and BFCL runs
 uv run --no-sync fc-report --methods   # results/methods.{json,md}: each method's checkpoints
+uv run fc-figures                 # docs/figures/: figures from results/methods.json, JSON + SVG
 uv run fc-serve --model Qwen/Qwen3.5-0.8B --max-num-seqs 256   # serving cost -> runs/serve-*
 uv run --no-sync fc-serve --report     # results/serving.{json,md}: the 0.8B against the 2B
 
@@ -315,6 +331,7 @@ src/fc_distill/
   slices.py     per-slice scores: call pattern, distractor tools, argument source
   report.py     baselines report with intervals and McNemar tests (fc-report)
   methods.py    method results: checkpoint selection, official scores, teacher-output counts (fc-report --methods)
+  figures.py    figures from results/methods.json for the README and the site (fc-figures)
   sft.py        methods A, B and C: LoRA training on gold labels, teacher outputs or the teacher's top 20 (fc-sft)
   teacher_topk.py  method C's teacher pass: the 2B's top-20 log-probs on B's training tokens (fc-teacher-topk)
   kd.py         method C's loss: forward KL over the stored top 20 plus a rest entry

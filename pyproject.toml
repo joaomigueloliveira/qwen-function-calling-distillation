@@ -30,6 +30,7 @@ fc-sft = "fc_distill.sft:main"
 fc-opd = "fc_distill.opd:main"
 fc-serve = "fc_distill.serving:main"
 fc-teacher-topk = "fc_distill.teacher_topk:main"
+fc-figures = "fc_distill.figures:main"
 
 [dependency-groups]
 dev = [
