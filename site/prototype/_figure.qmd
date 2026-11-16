@@ -1,0 +1,46 @@
+```{ojs}
+//| echo: false
+fig = FileAttachment("data/cost-accuracy.json").json()
+names = ({A: "A", B: "B", Bf: "filtered B", Bg: "grounded B", C: "C", Cf: "filtered C", D: "D", "B→D": "B then D"})
+colors = ({A: "#52514e", B: "#2a78d6", Bf: "#1baf7a", Bg: "#e87ba4", C: "#008300", Cf: "#eda100", D: "#e34948", "B→D": "#eb6834"})
+viewof shown = Inputs.checkbox(Object.keys(names), {label: "Methods", value: ["A", "B", "C", "D"], format: k => names[k]})
+```
+
+```{ojs}
+//| echo: false
+rows = fig.data.checkpoints.filter(d => shown.includes(d.method))
+ends = Array.from(d3.group(rows, d => d.method).values(), g => g[g.length - 1])
+Plot.plot({
+  width: Math.min(width, 760), height: 360, marginRight: 80, style: {fontSize: "13px"},
+  x: {label: "GPU-hours on one RTX 3060 →", domain: [0, 16]},
+  y: {label: "↑ exact match on validation (%)", domain: [40, 90], grid: true},
+  marks: [
+    Plot.ruleY(fig.data.baselines.filter(b => b.split === "validation"), {y: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
+    Plot.text(fig.data.baselines.filter(b => b.split === "validation"), {x: 0, y: d => 100 * d.exact, text: d => d.model === "raw 2B" ? "2B teacher" : "untrained 0.8B", dy: -7, textAnchor: "start", fill: "#898781"}),
+    Plot.line(rows.filter(d => !d.labels), {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method], strokeWidth: 2}),
+    Plot.line(rows.filter(d => d.labels), {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method], strokeWidth: 2, strokeDasharray: "5,3"}),
+    Plot.dot(rows.filter(d => d.pick), {x: "gpu_hours", y: d => 100 * d.exact, r: 8, stroke: d => colors[d.method], strokeWidth: 1.5}),
+    Plot.dot(rows, {x: "gpu_hours", y: d => 100 * d.exact, fill: d => colors[d.method], r: 3.5,
+      tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (picked)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours\n${(100 * d.exact).toFixed(1)}% on validation`}),
+    Plot.text(ends, {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 8, textAnchor: "start"}),
+  ],
+})
+```
+
+```{ojs}
+//| echo: false
+picks = fig.data.picks.filter(d => shown.includes(d.method)).sort((a, b) => b.exact - a.exact)
+Plot.plot({
+  width: Math.min(width, 760), height: 50 + 32 * picks.length, marginLeft: 90, marginRight: 70, style: {fontSize: "13px"},
+  x: {label: "exact match on test-clean (%) →", domain: [50, 100], grid: true},
+  y: {label: null, domain: picks.map(d => names[d.method])},
+  marks: [
+    Plot.ruleX(fig.data.baselines.filter(b => b.split === "test-clean"), {x: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
+    Plot.text(fig.data.baselines.filter(b => b.split === "test-clean"), {x: d => 100 * d.exact, frameAnchor: "top", text: d => d.model === "raw 2B" ? "2B" : "0.8B", dx: 4, textAnchor: "start", fill: "#898781"}),
+    Plot.ruleY(picks, {y: d => names[d.method], x1: d => 100 * d.ci[0], x2: d => 100 * d.ci[1], stroke: d => colors[d.method], strokeWidth: 2}),
+    Plot.dot(picks, {y: d => names[d.method], x: d => 100 * d.exact, r: 5, stroke: d => colors[d.method], fill: d => d.labels ? "white" : colors[d.method], strokeWidth: 1.5,
+      tip: true, title: d => `${names[d.method]}${d.labels ? " (uses labels)" : ""}, step ${d.step}\n${(100 * d.exact).toFixed(1)}% [${(100 * d.ci[0]).toFixed(1)}, ${(100 * d.ci[1]).toFixed(1)}]\n${d.gpu_hours.toFixed(2)} GPU-hours`}),
+    Plot.text(picks, {y: d => names[d.method], x: 100, text: d => `${d.gpu_hours.toFixed(1)} h`, dx: 8, textAnchor: "start", fill: "#898781"}),
+  ],
+})
+```

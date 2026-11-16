@@ -1,0 +1,18 @@
+# PROTOTYPE (#99), throwaway: three structurally different versions of the story page, switchable
+# from the floating bar at the bottom (or ← / →). Run from the repo root:
+#   uvx --from quarto-cli quarto preview site/prototype
+project:
+  type: website
+  output-dir: _site
+  render: [index.qmd, a-essay.qmd, b-answer-first.qmd, c-handbook.qmd]
+  resources: [data/*.json]
+
+website:
+  title: "Distilling function calling"
+
+format:
+  html:
+    css: styles.css
+    include-after-body: _switcher.html
+    smooth-scroll: true
+    link-external-newwindow: true

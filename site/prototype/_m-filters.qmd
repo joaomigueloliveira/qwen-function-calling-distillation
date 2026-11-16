@@ -1,0 +1,4 @@
+Some of the teacher's answers are wrong. **Filtered B** keeps only those that match gold (it uses
+labels, as a filter): **85.7%** at 2.5 GPU-hours. **Grounded B** keeps those whose every value is
+written in the query, a rule that never reads gold: **82.9%**, a tie with B. **Filtered C** is C on
+filtered B's rows (84.9%), and **B then D** runs D on top of B (81.7%).

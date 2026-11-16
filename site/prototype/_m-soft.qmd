@@ -1,0 +1,16 @@
+Cross-entropy on the written token is a KL divergence against a teacher that puts all its probability
+on that token. **C**, logit distillation, puts the rest back. On the same rows and text as B, the 2B's
+20 likeliest tokens and one entry for everything else are stored at every answer token, and the loss
+is the forward KL, KL(teacher ‖ student): a *soft target*.
+
+::: {.column-margin}
+[Hinton et al., 2015](https://arxiv.org/abs/1503.02531). Scoring B's text once with the 2B took 1.56
+GPU-hours and 490 MB (ADR 0010).
+:::
+
+The teacher is usually sure. Its written token is its first choice at 99.55% of answer positions, and
+its top 20 hold all but 0.039% of its probability on average. So C differs from B only where the
+teacher hesitates, as it does over `days` above.
+
+**Result.** C ties B on test-clean (**82.5%**, 4.7 GPU-hours). On tools it never saw (BFCL) it leads
+B, 81.6% against 79.1%, but not after correcting for the number of claims tested.

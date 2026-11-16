@@ -1,0 +1,90 @@
+---
+title: "Distilling function calling without labels"
+toc: false
+body-classes: answer
+---
+
+<!-- PROTOTYPE (#99), variant B "Answer first": the claim and its numbers up front, details on
+demand. Numbers are hand-copied in this prototype. -->
+
+::: {.hero}
+::: {.claim}
+Trained only on a 2B model's answers, a 0.8B model calls tools better than its teacher, in 3 GPU-hours
+on one consumer GPU.
+:::
+:::
+
+::: {.tiles}
+::: {.tile}
+[83.4%]{.n}<br>[0.8B after distillation, xLAM test-clean]{.l}
+:::
+::: {.tile}
+[76.8%]{.n}<br>[its 2B teacher]{.l}
+:::
+::: {.tile}
+[54.8%]{.n}<br>[the 0.8B before]{.l}
+:::
+::: {.tile}
+[3.1 h]{.n}<br>[GPU-hours on an RTX 3060]{.l}
+:::
+:::
+
+**What we found**
+
+::: {.takeaways}
+1. **Three kinds of distillation tie.** Copying the teacher's answers (B), matching its probabilities (C)
+   and learning on the student's own answers (D) land within a point on test-clean.
+2. **They differ in cost and in reach.** D costs 4.3× B, and is the one that does better on tools
+   never seen in training.
+3. **The student beats its teacher**, and it isn't output format.
+4. **Labels still matter**: SFT on gold reaches 93.2%.
+:::
+
+{{< include _figure.qmd >}}
+
+## The methods
+
+::: {.panel-tabset}
+
+### B: copy the answers
+
+{{< include _m-hard.qmd >}}
+
+### C: match the probabilities
+
+{{< include _token.qmd >}}
+
+{{< include _m-soft.qmd >}}
+
+### D: on-policy
+
+{{< include _m-onpolicy.qmd >}}
+
+### Filters
+
+{{< include _m-filters.qmd >}}
+
+:::
+
+## The details
+
+::: {.callout-note collapse="true"}
+## The question
+[Outline: queries without answers, a better model than the one you ship; xLAM-60k; Qwen3.5-2B → 0.8B;
+one RTX 3060.]{.outline-only}
+:::
+
+::: {.callout-note collapse="true"}
+## The data
+[Outline: a task; the grouped split; the label audit and `test-clean`.]{.outline-only}
+:::
+
+::: {.callout-note collapse="true"}
+## Measuring it
+[Outline: strict and lenient exact; BFCL; McNemar and Holm.]{.outline-only}
+:::
+
+::: {.callout-note collapse="true"}
+## Limitations and what's next
+[Outline: one seed, untuned settings, one small teacher; GRPO.]{.outline-only}
+:::

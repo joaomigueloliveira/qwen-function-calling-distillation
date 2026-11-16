@@ -1,0 +1,13 @@
+B and C learn from text the teacher wrote. At test time the student writes its own, and one early
+slip takes it somewhere it never trained. **D**, on-policy distillation, trains on the student's own
+answers: the 0.8B writes one, the 2B scores every token of it, and the loss is the reverse KL,
+KL(student ‖ teacher), which pushes down probability the student puts where the teacher puts little.
+
+::: {.column-margin}
+[Thinking Machines, 2025](https://thinkingmachines.ai/blog/on-policy-distillation/);
+[GKD](https://arxiv.org/abs/2306.13649). Here: TRL's `DistillationTrainer`, the 0.8B sampling in
+vLLM next to training and the 2B on one 12 GB card (ADR 0008).
+:::
+
+**Result.** D ties B on test-clean (**83.3%**) at 4.3× the cost (13.5 GPU-hours). It is better on
+unseen tools (BFCL 82.5% against 79.1%, Holm p = 0.009), a lead it reaches late in its run.

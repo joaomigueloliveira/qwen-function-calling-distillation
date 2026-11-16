@@ -1,0 +1,79 @@
+---
+title: "Can a small model learn function calling without labels?"
+subtitle: "Distilling Qwen3.5-2B into Qwen3.5-0.8B on one 12 GB GPU"
+author: "João Oliveira"
+date: 2026-11-16
+toc: true
+toc-location: left
+toc-title: "Contents"
+reference-location: margin
+body-classes: essay
+---
+
+<!-- PROTOTYPE (#99), variant A "Essay": a long read in the Thinking Machines style. Only "The
+methods" is drafted; other sections are the outline. Numbers are hand-copied in this prototype. -->
+
+::: {.lede}
+A 0.8B model, trained only on a 2B model's answers, calls tools better than the 2B does. Three ways
+of distilling end in a tie; what separates them is cost, and tools they have never seen.
+:::
+
+## The question
+
+[Outline: distillation is what you do with queries but no answers, and a better model than the one
+you want to ship. The task (xLAM-60k), the pair (Qwen3.5-2B → 0.8B, ADR 0004), the budget (one
+RTX 3060), and the question: how close does a label-free student get to one trained on gold labels?]{.outline-only}
+
+## The data
+
+[Outline: what a task looks like (query, offered tools, gold calls); the grouped split (ADR 0001);
+the label audit and `test-clean` (ADR 0002, 0005); gold's habit of writing defaults.]{.outline-only}
+
+## Measuring it
+
+[Outline: strict and lenient exact match, no LLM judge; BFCL for tools never seen in training; paired
+McNemar tests with Holm across every claim (ADR 0009).]{.outline-only}
+
+## The methods
+
+Every method below starts from the same untrained 0.8B and the same budget of one epoch. They differ
+in one thing: *what the student is trained toward* at each token.
+
+### Hard targets: copy the teacher's answers
+
+{{< include _m-hard.qmd >}}
+
+### Soft targets: the teacher's whole distribution
+
+Here is the difference between a hard and a soft target, at one real token.
+
+{{< include _token.qmd >}}
+
+{{< include _m-soft.qmd >}}
+
+### On-policy: the teacher grades the student's own answers
+
+{{< include _m-onpolicy.qmd >}}
+
+### Filtering the teacher's answers
+
+{{< include _m-filters.qmd >}}
+
+### Every method, per GPU-hour
+
+{{< include _figure.qmd >}}
+
+::: {.column-margin}
+Top: validation at every checkpoint, rings mark each run's pick. Bottom: each pick on test-clean with
+its 95% interval; hollow dots used labels. Data: `docs/figures/cost-accuracy.json`.
+:::
+
+## What we found
+
+[Outline: the label-free tie and why B is the headline; "faster, not better" on unseen tools; the
+student beats its teacher, and it isn't format; imitation vs accuracy; serving cost.]{.outline-only}
+
+## Limitations and what's next
+
+[Outline: one seed, one untuned config, one small teacher, one task; GRPO as the stretch
+goal.]{.outline-only}

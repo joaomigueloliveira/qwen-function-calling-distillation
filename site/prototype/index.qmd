@@ -1,0 +1,10 @@
+---
+title: "Site prototype (#99)"
+---
+
+Three versions of the same story page. Each has the full outline and one drafted section, *the methods*,
+with the same interactive figure. Flip between them with the bar at the bottom or the ← / → keys.
+
+- [A: Essay](a-essay.qmd): a long read in the style of the Thinking Machines post, notes in the margin.
+- [B: Answer first](b-answer-first.qmd): the claim and its numbers up front, details on demand.
+- [C: Handbook](c-handbook.qmd): a numbered outline in a sidebar, a fact card per method.

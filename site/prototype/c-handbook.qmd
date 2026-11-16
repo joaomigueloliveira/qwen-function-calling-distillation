@@ -1,0 +1,82 @@
+---
+title: "Function-calling distillation: the handbook"
+subtitle: "Qwen3.5-2B → Qwen3.5-0.8B, xLAM-60k, one RTX 3060"
+toc: true
+toc-location: left
+toc-depth: 2
+number-sections: true
+body-classes: handbook
+---
+
+<!-- PROTOTYPE (#99), variant C "Handbook": a numbered outline in the sidebar, a concept box per
+idea, a fact card per method. Numbers are hand-copied in this prototype. -->
+
+## The question
+
+[Outline: label-free distillation; the pair and the budget (ADR 0004, 0007).]{.outline-only}
+
+## The data
+
+[Outline: a task; the grouped split (ADR 0001); the label audit and `test-clean` (ADR 0002, 0005).]{.outline-only}
+
+## Measuring it
+
+[Outline: strict and lenient exact; BFCL; McNemar and Holm (ADR 0009).]{.outline-only}
+
+## The methods
+
+::: {.callout-tip}
+## Concept: hard and soft targets
+What the student is trained toward at one token: the token the teacher wrote (hard), or the teacher's
+probabilities over every token (soft).
+
+{{< include _token.qmd >}}
+:::
+
+::: {.card}
+#### B: SFT on teacher outputs
+
+| Trains toward | Labels | GPU-hours | Test-clean | BFCL | Decision |
+|---|---|---:|---:|---:|---|
+| the teacher's written token | no | 3.1 | 83.4% | 79.1% | ADR 0006 |
+
+{{< include _m-hard.qmd >}}
+:::
+
+::: {.card}
+#### C: logit distillation
+
+| Trains toward | Labels | GPU-hours | Test-clean | BFCL | Decision |
+|---|---|---:|---:|---:|---|
+| the teacher's top 20 + the rest | no | 4.7 | 82.5% | 81.6% | ADR 0010 |
+
+{{< include _m-soft.qmd >}}
+:::
+
+::: {.card}
+#### D: on-policy distillation
+
+| Trains toward | Labels | GPU-hours | Test-clean | BFCL | Decision |
+|---|---|---:|---:|---:|---|
+| the teacher's scores on the student's own answer | no | 13.5 | 83.3% | 82.5% | ADR 0008 |
+
+{{< include _m-onpolicy.qmd >}}
+:::
+
+::: {.card}
+#### Filters and pipelines
+
+{{< include _m-filters.qmd >}}
+:::
+
+### Every method, per GPU-hour
+
+{{< include _figure.qmd >}}
+
+## What we found
+
+[Outline: the tie; faster, not better; the student beats its teacher; serving.]{.outline-only}
+
+## Limitations and what's next
+
+[Outline: one seed, untuned settings, one small teacher; GRPO.]{.outline-only}

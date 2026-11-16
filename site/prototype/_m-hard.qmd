@@ -1,0 +1,13 @@
+The simplest way to learn from a teacher is to treat its answers as labels. The 2B answers all
+54,561 training queries once, the 52,424 answers that parse are kept, and the 0.8B is fine-tuned on
+them: **B**, supervised fine-tuning (SFT) on teacher outputs. **A** is the same recipe on xLAM's gold
+answers, the reference for what labels buy. At each answer token the loss is the cross-entropy of
+the one token written there, −log q(token): a *hard target*.
+
+::: {.column-margin}
+This is sequence-level distillation ([Kim & Rush, 2016](https://arxiv.org/abs/1606.07947)). Every
+method shares one untuned LoRA setup: rank 16, lr 2e-4, one epoch, 16 rows a step (ADR 0006).
+:::
+
+**Result.** B reaches **83.4%** on test-clean in **3.1 GPU-hours**: past its teacher's 76.8%, and 74%
+of what gold labels gain (A: 93.2%).

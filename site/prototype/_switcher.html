@@ -1,0 +1,31 @@
+<!-- PROTOTYPE switcher (#99): cycles between the three variants. -->
+<div id="proto-bar">
+  <button id="proto-prev" aria-label="previous variant">←</button>
+  <span id="proto-label"></span>
+  <button id="proto-next" aria-label="next variant">→</button>
+</div>
+<script>
+(() => {
+  const variants = [
+    { key: "A", name: "Essay", file: "a-essay.html" },
+    { key: "B", name: "Answer first", file: "b-answer-first.html" },
+    { key: "C", name: "Handbook", file: "c-handbook.html" },
+  ];
+  const here = location.pathname.split("/").pop() || "index.html";
+  let i = variants.findIndex(v => v.file === here);
+  const label = document.getElementById("proto-label");
+  label.textContent = i < 0 ? "pick a variant" : `${variants[i].key} (${variants[i].name})`;
+  const go = d => {
+    const n = ((i < 0 ? -1 : i) + d + variants.length) % variants.length;
+    location.href = `${variants[n].file}?variant=${variants[n].key}`;
+  };
+  document.getElementById("proto-prev").onclick = () => go(-1);
+  document.getElementById("proto-next").onclick = () => go(1);
+  document.addEventListener("keydown", e => {
+    const t = e.target;
+    if (t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+    if (e.key === "ArrowLeft") go(-1);
+    if (e.key === "ArrowRight") go(1);
+  });
+})();
+</script>

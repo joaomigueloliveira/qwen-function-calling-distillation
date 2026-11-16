@@ -1,0 +1,41 @@
+/* PROTOTYPE (#99). Tokens shared by the variants; each variant adds its own block below. */
+:root {
+  --ink: #1b1b1a; --ink-2: #52514e; --muted: #898781; --rule: #e1e0d9; --surface: #fcfcfb;
+  --tint: #f3f2ee; --accent: #2a78d6;
+}
+body { background: var(--surface); color: var(--ink); }
+#proto-bar {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 9999;
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 999px;
+  background: #111; color: #fff; font: 13px/1.2 system-ui, sans-serif; box-shadow: 0 4px 18px rgba(0,0,0,.25);
+}
+#proto-bar button { background: #333; color: #fff; border: 0; border-radius: 999px; width: 28px; height: 28px; cursor: pointer; }
+#proto-label { min-width: 140px; text-align: center; }
+.outline-only { color: var(--muted); font-style: italic; }
+.token-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+
+/* A: Essay */
+body.essay main { font-family: "Source Serif 4", Georgia, serif; font-size: 1.08rem; line-height: 1.65; }
+body.essay h1, body.essay h2, body.essay h3 { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: -.01em; }
+body.essay .column-margin, body.essay .margin-aside { font-size: .82rem; line-height: 1.45; color: var(--ink-2); }
+body.essay .lede { font-size: 1.25rem; line-height: 1.5; color: var(--ink-2); }
+
+/* B: Answer first */
+body.answer main { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.hero { padding: 28px 0 8px; }
+.hero .claim { font-size: clamp(1.4rem, 3.2vw, 2.1rem); line-height: 1.25; font-weight: 650; letter-spacing: -.015em; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0 28px; }
+.tile { border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; background: #fff; }
+.tile .n { font-size: 1.9rem; font-weight: 700; letter-spacing: -.02em; }
+.tile .l { font-size: .85rem; color: var(--ink-2); }
+.takeaways li { margin-bottom: .4rem; }
+
+/* C: Handbook */
+body.handbook main { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+body.handbook h2 { border-top: 1px solid var(--rule); padding-top: 1.2rem; }
+.card { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; margin: 14px 0; background: #fff; }
+.card h4 { margin-top: 0; }
+.card table { font-size: .9rem; margin-bottom: 0; }
+/* C: keep cards in the text column; their notes sit inline at the bottom instead of in the margin. */
+body.handbook .card.page-columns, body.handbook .card.page-full { display: block; grid-column: body-content-start / body-content-end; }
+body.handbook .card .column-margin { display: block; font-size: .85rem; color: var(--ink-2); margin-top: .6rem; border-top: 1px dashed var(--rule); padding-top: .5rem; }
