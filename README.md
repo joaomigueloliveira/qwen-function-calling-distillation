@@ -14,10 +14,11 @@ labels buy (ADR 0007).
 | **C** | Logit distillation on the teacher's top-k token probabilities | no |
 | **grounded B** | B on the teacher outputs whose values all appear in the query: a label-free filter | no |
 | **filtered B** | B on the teacher outputs that match gold: what the teacher's mistakes cost | yes, as a filter |
-| **E** | GRPO, reward checked against gold: does RL add anything on top of SFT? | yes, in the reward |
+| **filtered C** | C on the teacher outputs that match gold | yes, as a filter |
+| **E** | GRPO, reward checked against gold: does RL add anything on top of SFT? A stretch goal, not run | yes, in the reward |
 
-A, B, D, grounded B and filtered B are done, and B then D (a pipeline) was tried and dropped; C and
-E are next. Every result is
+Every method above but E is done, and B then D (a pipeline) was tried and dropped; E is a stretch
+goal after the write-up (ADR 0007). Every result is
 reported next to the untrained baselines and A, with two numbers on `test-clean`: the gap recovered
 from the raw 0.8B towards the 2B, and the share of A's gain reached without labels.
 
@@ -197,7 +198,8 @@ to answer the train split, and C's also the 1.56 h of the 2B's top-20 scoring pa
 C's the 1.12 h share of it its rows needed; D's
 include its own sampling and the teacher's grading, inside every step; B then D's include B's.
 Checkpoints are each run's best on validation (ADR 0006); the pick within a run is noisy, so a claim
-that rests on it names the checkpoint (ADR 0009). Next: GRPO, E, with labels.
+that rests on it names the checkpoint (ADR 0009). Next: the write-up (Phase 4), starting with the
+headline method's choice among the label-free ties.
 
 Training cost (#36): one epoch of LoRA SFT over the full train split takes about 3.9 GPU-hours on the
 RTX 3060 (0.072 GPU-hours per 1,000 rows, 4.6 GiB peak), after length grouping removed most of the
