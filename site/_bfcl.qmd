@@ -11,7 +11,7 @@ Plot.plot({
     Plot.line(bfcl.data.runs.filter(d => d.labels), {x: "gpu_hours", y: d => 100 * d.exact, z: "method", stroke: d => colors[d.method], strokeWidth: 2, strokeDasharray: "5,3"}),
     Plot.dot(bfcl.data.runs.filter(d => d.pick), {x: "gpu_hours", y: d => 100 * d.exact, r: 8, stroke: d => colors[d.method], strokeWidth: 1.5}),
     Plot.dot(bfcl.data.runs, {x: "gpu_hours", y: d => 100 * d.exact, fill: d => colors[d.method], r: 3.5,
-      tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (chosen)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours\n${(100 * d.exact).toFixed(1)}% [${(100 * d.ci[0]).toFixed(1)}, ${(100 * d.ci[1]).toFixed(1)}] on BFCL`}),
+      tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (selected)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours\n${(100 * d.exact).toFixed(1)}% [${(100 * d.ci[0]).toFixed(1)}, ${(100 * d.ci[1]).toFixed(1)}] on BFCL`}),
     Plot.text(Array.from(d3.group(bfcl.data.runs, d => d.method).values(), g => g[g.length - 1]),
       {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 8, textAnchor: "start"}),
   ],
@@ -19,7 +19,6 @@ Plot.plot({
 ```
 
 ::: {.caption}
-Exact match on BFCL, tools never seen in training, at every checkpoint scored there. Rings mark the
-checkpoint validation chose; dashed lines used labels. Each point's 95% interval is about ±2.5
-points (hover).
+Exact match on BFCL, tools never seen in training, at every checkpoint scored there. Rings mark each run's
+selected checkpoint; dashed lines used labels. Hover for each point's 95% interval.
 :::

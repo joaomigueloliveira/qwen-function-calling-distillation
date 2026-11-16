@@ -28,8 +28,8 @@ Plot.plot({
 ```
 
 ```{ojs}
-md`The untrained student prefers 7. Loss at this token: **${loss.toFixed(2)} nats**
+md`The untrained student prefers ${d3.greatest(probe.tokens, d => d.student).token}. Loss at this token: **${loss.toFixed(2)} nats**
 (${target.startsWith("hard") ? "cross-entropy on the written token" : "KL(teacher ‖ student)"}).
-The hard target pushes all of the student's probability onto 3; the soft target only asks it to
-match the teacher, who also thinks 7 is plausible.`
+The hard target pushes all of the student's probability onto ${probe.written}; the soft target
+only asks it to match the teacher, which spreads its own.`
 ```
