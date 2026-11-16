@@ -98,7 +98,10 @@ and filtered C − filtered B is the same contrast on clean rows. It runs after 
 - C inherits the teacher's uncertainty where it hedges, including about writing optional
   arguments and about fencing its answer; the default-made-explicit and format readouts are there
   to see it.
-- The teacher pass cost 1.56 GPU-h (#85), so C and filtered C start at 2.99 GPU-h before training.
+- The teacher pass cost 1.56 GPU-h (#85), so C starts at 2.99 GPU-h before training. Filtered C
+  is charged the share of that pass its 37,696 rows needed (1.12 h, as fc-sft computes it since
+  #86), so it starts at 2.55: it could have scored only those rows, while the generation pass
+  has to answer every row before the filter can choose.
 - One untuned config and one seed, as for every method; the learning rate wasn't chosen for a KL
   loss, though at T = 1 its gradient (student − teacher probabilities) has cross-entropy's scale.
 - Build and run tickets, in order: the teacher top-k pass (#85), the KL loss in fc-sft (#86), the

@@ -69,6 +69,7 @@ nondeterminism in vLLM).
 | **Grounded B**: 0.8B, SFT on teacher outputs whose values are all in the query | no | 3.02 | 71.0 [69.0, 73.0] | 82.9 [81.0, 84.7] | 79.8 [77.2, 82.2] |
 | **C**: 0.8B, logit distillation on the teacher's top 20 | no | 4.70 | 70.7 [68.7, 72.7] | 82.5 [80.6, 84.3] | 81.6 [79.1, 83.9] |
 | **Filtered B**: 0.8B, SFT on teacher outputs that match gold | yes, as a filter | 2.50 | 74.8 [72.8, 76.6] | 85.7 [83.9, 87.3] | 80.8 [78.2, 83.1] |
+| **Filtered C**: 0.8B, logit distillation on teacher outputs that match gold | yes, as a filter | 3.63 | 73.5 [71.5, 75.3] | 84.9 [83.1, 86.6] | 84.1 [81.7, 86.2] |
 | **A**: 0.8B, SFT on gold labels | yes | 3.83 | 84.8 [83.1, 86.3] | 93.2 [91.9, 94.3] | 84.5 [82.1, 86.6] |
 
 Each claim below compares two models on the same rows with a paired McNemar test; "Holm" is that
@@ -92,7 +93,7 @@ The Holm values move as claims are added: each new claim widens the family.
   values), and B's lead is larger on the 109 rows whose tool set train never saw (83.5 vs 68.8).
 - **On tools it never trained on, it doesn't beat the 2B, and trails it, though not robustly.** B
   gains 14.6 points on BFCL over the raw 0.8B but stays below the 2B (54 vs 90, p = 0.003), though
-  not after Holm (0.051) since C's claims joined the family. Its format holds (parse_ok 98.8 vs 98.9); it loses
+  not after Holm (0.054) since C's claims joined the family. Its format holds (parse_ok 98.8 vs 98.9); it loses
   on argument values, in every BFCL category.
 - **On xLAM, D and B are not significantly different under strict exact; they differ in kind.** On
   test-clean D scores 83.3 and B 83.4 (60 vs 62 rows, p = 0.93): 129% of the gap to the 2B, 74% of
@@ -102,13 +103,13 @@ The Holm values move as claims are added: each new claim widens the family.
   defaults (on the 123 test-clean rows that turn on it, B gets 52 and D 40). D also stays closer to
   the teacher: it repeats 43% of the 2B's wrong test-clean answers, B 35%.
 - **On BFCL, D reaches 82.5, not significantly different from the 2B (p = 0.93).** It is above B's
-  selected checkpoint (62 vs 28, Holm p = 0.008), from argument values and function choice, not
+  selected checkpoint (62 vs 28, Holm p = 0.009), from argument values and function choice, not
   format. That holds for B's selected checkpoint only: B's BFCL keeps rising after it, to 81.1 at the
   end of its epoch (5.1 GPU-hours), which D doesn't significantly beat (p = 0.12; #70). D took
   13.5 GPU-hours, and D's own BFCL rises with training (78.7 at step 500, p = 0.0002 against step
   3000), so with one seed the data can't tell on-policy training from more training.
 - **Per GPU-hour, D shows no advantage.** At B's budget (step 500, 2.2 GPU-hours) D trails on
-  test-clean, 81.0 vs 83.4 (p = 0.006), but not after Holm (0.08), and the gap comes from the default
+  test-clean, 81.0 vs 83.4 (p = 0.006), but not after Holm (0.085), and the gap comes from the default
   habit (p = 0.14 without those 123 rows); on BFCL it is not significantly different. Validation, on
   1,000 rows, called it a tie. Along the runs, B's BFCL at the end of its epoch (81.1, 5.1 GPU-hours)
   is above D's at 4.5 and 6.8 GPU-hours (77.8 and 78.2; #70, explanation only). B's GPU-hours are charged for the teacher answering all
@@ -116,7 +117,7 @@ The Holm values move as claims are added: each new claim widens the family.
 - **D's loss on top of B doesn't help.** B then D continues B's selected checkpoint with D's loss
   (lr 5e-5, a fourth of D's, stopped at step 1000 of the epoch, #58). No checkpoint beat B on
   validation. Its pick, step 400 (1.65 GPU-hours on top of B's), is behind B on test-clean under
-  strict exact (81.7 vs 83.4, 42 vs 70, p = 0.01), but not after Holm (0.11), and level under lenient (43 vs 47,
+  strict exact (81.7 vs 83.4, 42 vs 70, p = 0.01), but not after Holm (0.12), and level under lenient (43 vs 47,
   p = 0.75): it moves B towards the teacher's conventions. Of the 70 test-clean rows it turns wrong,
   29 differ only by a default and 31 now give the 2B's answer. On BFCL it is not significantly
   different from B (78.9 vs 79.1, p = 0.91) and below D (Holm p = 0.002). One learning rate, one
@@ -168,17 +169,35 @@ The Holm values move as claims are added: each new claim widens the family.
   had one (#85). The fence costs C rows: its training text never goes on after a fence, and 7 of its
   90 fenced answers open a call object but close a list, so they don't parse. C fails to parse 13
   test-clean answers to B's 6 (parse_ok 99.2 vs 99.6), and 10 of its 64 losses are those; on the
-  rows where both parse it is 49 vs 54 (p = 0.69). Its pick is also its worst-parsing checkpoint on
-  validation (98.3, the others 98.9 to 99.3). It costs more: the 2B's top-20 pass adds 1.56
+  rows where both parse it is 49 vs 54 (p = 0.69). Its pick also parses worse on validation than any
+  later checkpoint (98.3; steps 1000 to 3277: 98.9 to 99.3). It costs more: the 2B's top-20 pass adds 1.56
   GPU-hours to the 1.43 B pays for the teacher's answers, so its pick sits at 4.70 GPU-hours and no
   checkpoint falls within B's 3.12. It doesn't become a separate headline candidate: it ties B on
   test-clean at higher cost (ADR 0009).
+- **On clean rows, soft targets learn unseen tools faster than hard ones, not better.** Filtered C
+  is C's loss on filtered B's 37,696 rows (#88). Its selected step, 1000, beats filtered B's, also
+  step 1000, on BFCL (84.1 vs 80.8, 64 vs 31, Holm p = 0.02; with both parsed 62 vs 30), mostly on
+  argument values and on parallel calls filtered B leaves short. That lead holds for the selected
+  checkpoints only: filtered B's BFCL keeps rising (83.0 at the end of its epoch, p = 0.03 against
+  step 1000), and end against end the two are not significantly different (84.3 vs 83.0, 52 vs 39,
+  p = 0.21), nor is filtered C's pick against filtered B's end (57 vs 46, p = 0.32; 3.63 vs 3.98
+  GPU-hours). This is explanation only, measured after the picks (#88), as for D in #70. On
+  test-clean filtered C is not significantly different from filtered B (84.9 vs 85.7, 70 vs 82,
+  p = 0.37; lenient 62 vs 80, p = 0.15; 137% of the gap, 78% of A's gain) and beats C (115 vs 76,
+  p = 0.006): the gold filter helps soft targets as it helps hard ones. On BFCL it is level with A
+  (84.5, p = 0.78) and the 2B (82.7, p = 0.28). Its layout costs it more than C's: 24 of its 47
+  fenced test-clean answers don't parse, 23 of them a fence never closed, so it fails to parse 29
+  rows to filtered B's 3; on the rows where both parse it is 69 vs 57 (p = 0.33). It writes
+  defaults out a little more than filtered B (51.2% of the 123 rows, filtered B 47.1%). Its pick is
+  its worst-parsing checkpoint on validation (97.2; the others 98.7 to 99.3), and none of its
+  checkpoints falls within filtered B's 2.50 GPU-hours: its first, at step 500, costs 3.09.
 
-B's, grounded B's, filtered B's and C's GPU-hours include the 1.43 h the teacher took to answer the
-train split, and C's also the 1.56 h of the 2B's top-20 scoring pass (#85); D's
+B's, grounded B's, filtered B's, C's and filtered C's GPU-hours include the 1.43 h the teacher took
+to answer the train split, and C's also the 1.56 h of the 2B's top-20 scoring pass (#85), filtered
+C's the 1.12 h share of it its rows needed; D's
 include its own sampling and the teacher's grading, inside every step; B then D's include B's.
 Checkpoints are each run's best on validation (ADR 0006); the pick within a run is noisy, so a claim
-that rests on it names the checkpoint (ADR 0009). Next: filtered C, C's loss on filtered B's rows (#88).
+that rests on it names the checkpoint (ADR 0009). Next: GRPO, E, with labels.
 
 Training cost (#36): one epoch of LoRA SFT over the full train split takes about 3.9 GPU-hours on the
 RTX 3060 (0.072 GPU-hours per 1,000 rows, 4.6 GiB peak), after length grouping removed most of the
