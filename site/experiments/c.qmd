@@ -34,7 +34,8 @@ runs = ["C"]
 - **It inherits the teacher's habits.** Where the teacher hesitates over format, so does C: it fences
   `{python} pct(M["formats"]["C"]["fenced"])` of its answers in a code block (the 2B
   `{python} pct(M["formats"]["raw 2B"]["fenced"])`, B never). Its training text never continues
-  after a fence, and some of those answers don't close it.
+  after a fence, and some of those answers open a call object but close a list, so they don't
+  parse.
 - **It costs more**: the scoring pass puts its selected checkpoint at `{python} story.gpu_hours("C")`
   GPU-hours, and no checkpoint falls within B's budget.
 

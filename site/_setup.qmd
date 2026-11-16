@@ -20,6 +20,8 @@ defaults_rows = M["defaults"]["B"]["rows"]
 teacher = M["teacher"]
 last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
 d_budget = M["at_b_budget"]["D"]
+d_cost = next(c for c in M["methods"]["D"]["checkpoints"] if c["step"] == M["methods"]["D"]["selected"])["gpu_hours"]
+b_cost = next(c for c in M["methods"]["B"]["checkpoints"] if c["step"] == M["methods"]["B"]["selected"])["gpu_hours"]
 b_clean = M["methods"]["B"]["official"]["test-clean"]["exact"]
 tie_gap = max(abs(M["methods"][k]["official"]["test-clean"]["exact"] - b_clean) for k in ("C", "D"))
 

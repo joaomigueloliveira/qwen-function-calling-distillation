@@ -40,7 +40,7 @@ APIGen generated many queries per tool, so the same sentence recurs with differe
 factorial of 7", "of 10"). Rows are therefore **grouped by their normalised query** and whole groups go
 to one split, so no query appears in two.
 
-Tools are still shared on purpose: test asks the student to fill new values into tools it has seen.
+Tools are still shared by construction: test asks the student to fill new values into tools it has seen.
 So **xLAM's test measures in-distribution tool calling**, and a second dataset,
 [BFCL](bfcl.qmd), measures tools it has never seen.
 
@@ -57,12 +57,12 @@ only produces official numbers.
 The data is clean in structure: every answer parses and calls an offered tool. The problems are in
 the content:
 
-| Problem | Found in the card | What was done (train only) |
+| Problem | Found | What was done |
 |---|---|---|
-| Exact duplicate rows | 375 | collapsed to one copy |
-| Same query and tools, different gold answers | 21 rows | removed: no model can be right on both |
-| Code instead of a value (`"math.pi / 2"` for a float) | 224 rows | removed: it teaches copying text, not computing |
-| Gold answer equal to a validation or test answer | 1,831 train rows | removed: it would reward memorising answers |
+| Exact duplicate rows | 375 | collapsed to one copy, before splitting |
+| Same query and tools, different gold answers | 21 rows | 20 removed from train: no model can be right on both |
+| Code instead of a value (`"math.pi / 2"` for a float) | 224 rows | 213 removed from train: it teaches copying text, not computing |
+| Train gold answer equal to a validation or test answer | 1,831 rows | removed from train: it would reward memorising answers |
 | Optional arguments written at their default | 7.7% of rows | kept; scored by [lenient exact](../evaluation/metrics.qmd) |
 
 Validation and test keep every row as published, so the numbers stay comparable with other xLAM

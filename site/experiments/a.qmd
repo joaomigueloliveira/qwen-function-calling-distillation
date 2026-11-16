@@ -26,7 +26,7 @@ runs = ["A"]
 
 ## What it shows
 
-- **Labels still buy a lot.** A beats every label-free method on test-clean: B by
+- **Labels still buy a lot.** A beats B and D on test-clean: B by
   `{python} story.claim("A", "B", "test-clean")` and D by
   `{python} story.claim("A", "D", "test-clean")`.
 - **Part of it is gold's habits.** A learns which optional arguments xLAM writes out: on the

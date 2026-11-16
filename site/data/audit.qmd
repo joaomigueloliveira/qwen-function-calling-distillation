@@ -18,8 +18,8 @@ Before any training, the baselines' mistakes looked suspicious: models of 0.8B, 
 made about the same number of wrong-argument errors. Errors that don't shrink with a model five
 times larger point at the answers, not the models. Is "3% interest" `3` or `0.03`?
 
-So every test row that **any** baseline got wrong was audited by hand,
-`{python} n(audited)` of the `{python} n(splits["test"])`, with one question: *would a careful
+So every test row that **any** baseline got wrong was audited, `{python} n(audited)` of the
+`{python} n(splits["test"])`, most of them by hand, with one question: *would a careful
 person, reading only the query and the tool specs, write this gold answer?* Labelling was blind to
 which model erred.
 

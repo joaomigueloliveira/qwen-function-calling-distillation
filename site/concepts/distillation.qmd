@@ -10,9 +10,9 @@ subtitle: "Teaching a small model with a bigger one"
 `{python} serve["one_at_a_time"]` faster than the 2B, one request at a time. The question is how
 much of the teacher's skill survives the trip.
 
-It matters most when there are inputs but no answers. Labelling 60,000 function calls by hand is
-expensive; a teacher can answer them all in about `{python} f"{teacher['gpu_hours']:.1f}"`
-GPU-hours. So this project asks what a student can learn **without gold labels**, and compares it
+It matters most when there are inputs but no answers. Labelling tens of thousands of function calls
+by hand is expensive; here the teacher answers all `{python} n(teacher["rows"])` training queries in
+about `{python} f"{teacher['gpu_hours']:.1f}"` GPU-hours. So this project asks what a student can learn **without gold labels**, and compares it
 with the same student trained on them.
 
 ::: {.column-margin}
@@ -25,7 +25,7 @@ generated sequences works on its own.
 
 Every method here fine-tunes the same Qwen3.5-0.8B with **LoRA**: the model's weights stay frozen,
 and small low-rank matrices are added to every linear layer and trained instead, about 1.4% of the
-parameters. It fits the 12 GB card with room to spare, and every method shares one setup, so they
+parameters ([results/sft-cost.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/sft-cost.md)). It fits the 12 GB card with room to spare, and every method shares one setup, so they
 differ only in what the student is trained toward.
 
 The loss is computed on the answer tokens only. The prompt (the tools and the query) is context the

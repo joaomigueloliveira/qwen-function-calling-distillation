@@ -8,8 +8,9 @@ subtitle: "On-policy distillation on top of B"
 **Question.** Thinking Machines start on-policy distillation from a fine-tuned checkpoint. Does D's
 loss improve B, rather than replace it?
 
-**Setup.** B's selected checkpoint, continued with D's loss at a quarter of D's learning rate,
-stopped early, with checkpoints every 100 steps to see whether it gains fast. Reported as a pipeline,
+**Setup.** B's selected checkpoint, continued with D's loss at a quarter of D's learning rate, with
+the cosine schedule over a full epoch but stopped at step 1,000; checkpoints at steps 100 to 500 and
+at 1,000, to see whether it gains fast. Reported as a pipeline,
 not as method D.
 
 ::: {.facts}
@@ -29,7 +30,7 @@ runs = ["B→D"]
 - **It doesn't help.** No checkpoint beat B on validation. The selected one is behind B on
   test-clean under strict exact (`{python} story.claim("B→D", "B", "test-clean")`), and level under
   lenient: it moves B toward the teacher's conventions about defaults.
-- **On unseen tools it is level with B and below D**
+- **On unseen tools it is not significantly different from B, and below D**
   (`{python} story.claim("B→D", "D", "bfcl")`). One learning rate and one seed; the run wasn't
   resumed.
 

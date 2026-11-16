@@ -61,6 +61,15 @@ METHODS["claims"] = [
         "p": 0.00804,
         "holm_p": 0.104,
     },
+    {
+        "a": "B",
+        "b": "raw 2B",
+        "eval": "bfcl",
+        "only_a_right": 54,
+        "only_b_right": 90,
+        "p": 0.00339,
+        "holm_p": 0.0543,
+    },
 ]
 METHODS["headline"] = {"B/test-clean": {"gap_recovered": 1.2987, "share_of_a": 0.7439}}
 SERVING: dict[str, Any] = {"speedup": 1.91, "latency_speedup": 2.39}
@@ -81,6 +90,8 @@ def test_claim_prints_a_paired_comparison_with_its_holm_p_value() -> None:
     assert story.claim("B", "raw 2B", "test-clean") == "159 vs 52 rows, Holm p < 0.0001"
     assert story.claim("D", "B", "bfcl") == "62 vs 28 rows, Holm p = 0.009"
     assert story.claim("C", "B", "bfcl") == "54 vs 29 rows, Holm p = 0.10"
+    # near 0.05, three decimals: 0.054 must not print as a borderline "0.05"
+    assert story.claim("B", "raw 2B", "bfcl") == "54 vs 90 rows, Holm p = 0.054"
 
 
 def test_headline_gives_the_claims_numbers_for_the_headline_method_b() -> None:

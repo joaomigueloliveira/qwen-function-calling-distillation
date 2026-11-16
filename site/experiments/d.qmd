@@ -31,10 +31,10 @@ runs = ["D"]
   better at choosing functions and completing every call; B is better at xLAM's habit of writing
   defaults out (`{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)` against
   `{python} pct(M["defaults"]["D"]["default_made_explicit"], 0)` on those rows).
-- **It is better on unseen tools**: `{python} story.score("D", "bfcl")` on BFCL, level with the
-  teacher (`{python} story.claim("D", "B", "bfcl")` against B). But its BFCL rises with training,
-  and B's keeps rising past its own pick, so with one seed the data can't tell on-policy learning
-  from more training.
+- **On unseen tools it is above B's selected checkpoint**: `{python} story.score("D", "bfcl")` on
+  BFCL (`{python} story.claim("D", "B", "bfcl")`), and not significantly different from the 2B. But
+  its BFCL rises with training, and B's keeps rising past its own pick to a score D doesn't
+  significantly beat, so with one seed the data can't tell on-policy learning from more training.
 - **Per GPU-hour it shows no advantage.** At B's budget (step `{python} d_budget["step"]`,
   `{python} f"{d_budget['gpu_hours']:.1f}"` GPU-hours) it scores
   `{python} pct(d_budget["official"]["test-clean"]["exact"])` on test-clean

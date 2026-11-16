@@ -11,7 +11,7 @@ bt = next(c for c in M["claims"] if (c["a"], c["b"], c["eval"]) == ("B", "raw 2B
 
 ## Choosing a checkpoint
 
-Each run saves a checkpoint every 500 steps. Every checkpoint is scored on validation, and the best
+Each run saves a checkpoint every 500 steps (B then D, a short run, every 100). Every checkpoint is scored on validation, and the best
 by strict exact is the **selected checkpoint**, a tie going to the earlier one. Only that one is run
 on test, test-clean and BFCL. The rule was fixed before any run.
 
@@ -49,7 +49,9 @@ are added, so an earlier claim's adjusted p-value can only rise.
 ## Methods tie, then cost decides
 
 Where test-clean can't separate methods, no winner is named; the cheaper is published, and when costs
-are within 10% of each other, the simpler pipeline. That is why the headline method is B.
+are within 10% of each other, the simpler pipeline. That is why the headline method is B. The 10%
+reading was chosen after the results were known: read literally, the rule names grounded B, 3% cheaper,
+and the site reports it beside B.
 
 ## What a GPU-hour includes
 

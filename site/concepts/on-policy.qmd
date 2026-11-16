@@ -42,9 +42,9 @@ student that can't match everything, that is usually the better trade.
 
 The teacher has to score every answer the student writes, during training, so D runs both models
 and a sampling engine at once. On the 12 GB card: TRL's `DistillationTrainer`, the student sampling
-in vLLM next to training, and the 2B in the same process. D's epoch took
+in vLLM next to training, and the 2B in the same process. D's full epoch took
 `{python} f"{last['D']['gpu_hours']:.1f}"` GPU-hours, against
-`{python} f"{last['B']['gpu_hours']:.1f}"` for B's, the teacher's pass included.
+`{python} f"{last['B']['gpu_hours']:.1f}"` for B's full epoch, the teacher's pass included.
 
 ::: {.column-margin}
 D's design: [ADR 0008](../decisions/0008-method-d-setup.html). What it found:

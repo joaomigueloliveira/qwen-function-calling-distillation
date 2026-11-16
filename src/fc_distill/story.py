@@ -102,7 +102,8 @@ class Story:
 
 
 def p_value(p: float) -> str:
-    """'< 0.0001', '= 0.009' (three decimals under 0.01), '= 0.10' (two otherwise)."""
+    """'< 0.0001', then three decimals under 0.1 ('= 0.009', '= 0.054': nothing near 0.05 is
+    rounded onto it), two above ('= 0.10')."""
     if p < 0.0001:
         return "< 0.0001"
-    return f"= {p:.3f}" if p < 0.01 else f"= {p:.2f}"
+    return f"= {p:.3f}" if p < 0.1 else f"= {p:.2f}"

@@ -20,7 +20,8 @@ categories.
 | parallel_multiple | several functions, several calls |
 
 Left out: *live* rows (user-contributed, messier specs), *irrelevance* (the right answer is no call,
-which xLAM never teaches), multi-turn, and the other languages.
+which xLAM never teaches), multi-turn, and the Java, JavaScript, REST and SQL categories (other output
+formats).
 
 ::: {.column-margin}
 How BFCL is converted and scored:
@@ -41,7 +42,7 @@ acceptable, under the same strict comparison as xLAM.
 
 The untrained 0.8B scores `{python} story.score("raw 0.8B", "bfcl")` on BFCL and the 2B
 `{python} story.score("raw 2B", "bfcl")`. B gains on it but stays below its teacher
-(`{python} story.claim("B", "raw 2B", "bfcl")`), while D reaches the teacher's level. Details:
+(`{python} story.claim("B", "raw 2B", "bfcl")`), while D is not significantly different from it. Details:
 [results](../results.qmd).
 
 BFCL is public, so Qwen3.5 may have seen it in pretraining; that would lift every model, not one
