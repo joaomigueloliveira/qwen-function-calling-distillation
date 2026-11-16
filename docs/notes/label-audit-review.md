@@ -1,6 +1,6 @@
 # Label audit: blind review sheet
 
-Relabel each row against [the rubric](../docs/label-audit.md) and write the verdict (`label_sound`, `label_ambiguous` or `label_wrong`) into `data/audit/review.csv`. Then run `uv run fc-audit build`, which reports the disagreements.
+Relabel each row against [the rubric](../label-audit.md) and write the verdict (`label_sound`, `label_ambiguous` or `label_wrong`) into `data/audit/review.csv`. Then run `uv run fc-audit build`, which reports the disagreements.
 
 ## 4334
 

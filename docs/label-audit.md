@@ -69,7 +69,7 @@ can be a loose spec (a `str` declared where a list is plainly meant) rather than
 ## Review
 
 The maintainer relabels 30 random audited rows blind, without seeing the verdicts. `uv run fc-audit
-review` draws them (seed 0) and writes the sheet `results/label-audit-review.md` plus
+review` draws them (seed 0) and writes the sheet `docs/notes/label-audit-review.md` plus
 `data/audit/review.csv` to fill in. `uv run fc-audit build` then reports two kinds of disagreement:
 any change of verdict, and changes of soundness (sound vs ambiguous/wrong), which are the ones that
 move rows in or out of `test-clean`. More than 3 soundness disagreements means the rubric is too

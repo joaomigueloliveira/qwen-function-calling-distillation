@@ -171,7 +171,7 @@ The Holm values move as claims are added: each new claim widens the family.
   dropped 91% of B's training rows of that kind. Its epoch is shorter too (2,120 steps vs 3,277), and
   each is one seed. It doesn't become a separate headline candidate: it ties B at the same cost
   (3.02 vs 3.12 GPU-hours) and trails it under lenient, so B stays the label-free reference, and
-  Phase 4 chooses among the methods test-clean can't separate (ADR 0009).
+  the headline method among the methods test-clean can't separate (ADR 0009).
 - **Soft targets don't beat hard ones on xLAM; on unseen tools C leads B, not robustly.** C trains on
   B's own 52,424 rows and text, with the 2B's top-20 log-probs at every token instead of the one
   token it wrote (forward KL, ADR 0010, #87). Its selected step, 1500, is not significantly different
@@ -215,8 +215,8 @@ to answer the train split, and C's also the 1.56 h of the 2B's top-20 scoring pa
 C's the 1.12 h share of it its rows needed; D's
 include its own sampling and the teacher's grading, inside every step; B then D's include B's.
 Checkpoints are each run's best on validation (ADR 0006); the pick within a run is noisy, so a claim
-that rests on it names the checkpoint (ADR 0009). Next: the write-up (Phase 4), starting with the
-headline method's choice among the label-free ties.
+that rests on it names the checkpoint (ADR 0009). Of the label-free methods test-clean
+can't separate, B is the headline method, the simplest (ADR 0009, #95). Next: the write-up (Phase 4).
 
 Training cost (#36): one epoch of LoRA SFT over the full train split takes about 3.9 GPU-hours on the
 RTX 3060 (0.072 GPU-hours per 1,000 rows, 4.6 GiB peak), after length grouping removed most of the
@@ -302,8 +302,8 @@ W&B project, because they hold gated xLAM rows:
 `WANDB_ENTITY` point it at another project. Trainers log through the same helper,
 `fc_distill.tracking`, with GPU-hours (the teacher's included) as the x-axis. Every eval run uses
 the same flat keys (`test_clean/exact`, `bfcl/slice/simple/exact`, ...), so runs compare in one
-table. W&B findings, the key schema and what trainers log: [`docs/wandb.md`](docs/wandb.md),
-[`docs/wandb-dashboard.md`](docs/wandb-dashboard.md).
+table. W&B findings, the key schema and what trainers log: [`docs/notes/wandb.md`](docs/notes/wandb.md),
+[`docs/notes/wandb-dashboard.md`](docs/notes/wandb-dashboard.md).
 
 ## Development
 

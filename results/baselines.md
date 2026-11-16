@@ -14,7 +14,7 @@ Strict exact match is the headline metric. Lenient exact also accepts optional a
 
 ## Starting line for Phase 2
 
-On test-clean the student scores **54.8** and the teacher **76.8**: a gap of **22.0 points**. #2's success criterion is to recover at least half of it, a distilled 0.8B at **65.8** or better on test-clean, with the recovered fraction significant at p < 0.05. How that is tested (a paired interval on the recovered fraction, and against which student baseline) is settled in the Phase 2 design review.
+On test-clean the student scores **54.8** and the teacher **76.8**: a gap of **22.0 points**. #2's success criterion is to recover at least half of it, a distilled 0.8B at **65.8** or better on test-clean, with the recovered fraction significant at p < 0.05. #35 settled the test: the point estimate, with a paired McNemar test against the raw 0.8B.
 
 ## Paired comparisons
 

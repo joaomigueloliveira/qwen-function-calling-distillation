@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
 Rows = list[dict[str, Any]]
-# The W&B app on CoreWeave's Forge, where the public project lives (docs/wandb-dashboard.md).
+# The W&B app on CoreWeave's Forge, where the public project lives (docs/notes/wandb-dashboard.md).
 WANDB_APP = "https://forge.coreweave.com/wandb"
 DEFAULT_RESULTS = Path("results/methods.json")
 DEFAULT_OUT = Path("docs/figures")

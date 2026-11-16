@@ -17,4 +17,4 @@ and evaluation.
 
 - Every method stays cheap enough to run several times on one 12 GB GPU.
 - The teacher's ceiling may be lower than with thinking on. Distilling the teacher's reasoning traces is
-  a Phase 4 stretch goal, measured against this baseline.
+  a stretch goal (map #2), measured against this baseline.

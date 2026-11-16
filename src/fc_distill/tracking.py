@@ -3,7 +3,7 @@
 Logging is off unless a run asks for it (`enabled=True`), and then wandb is imported only inside
 `start_run`, so tests, CI and offline runs never need an account or network. `WANDB_MODE=offline`
 or `disabled` still applies to an enabled run: no `mode=` is passed to `wandb.init`.
-Findings behind these choices: docs/wandb.md.
+Findings behind these choices: docs/notes/wandb.md.
 """
 
 import hashlib
@@ -237,7 +237,7 @@ def start_run(
     if not run.disabled:
         id_file.write_text(run.id)
     # By exact name, never by glob: the HF callback defines "*" against train/global_step, and
-    # wandb picks among matching globs in random order (docs/wandb.md section 6).
+    # wandb picks among matching globs in random order (docs/notes/wandb.md section 6).
     run.define_metric(GPU_HOURS)
     for metric in VAL_METRICS:
         run.define_metric(metric, step_metric=GPU_HOURS, summary="max,last")

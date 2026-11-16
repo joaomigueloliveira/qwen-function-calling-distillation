@@ -86,7 +86,7 @@ Sound labels that a strict scorer still marks wrong for an equivalent call:
 ## Review
 
 The maintainer relabels 30 random audited rows blind (`uv run fc-audit review` writes
-[the sheet](label-audit-review.md) and `data/audit/review.csv`, seed 0). More than 3 disagreements
+[the sheet](../docs/notes/label-audit-review.md) and `data/audit/review.csv`, seed 0). More than 3 disagreements
 that change soundness means the rubric is too loose: tighten it and relabel.
 
 **Outcome: 9 of 30 rows changed soundness, over the threshold of 3. The rubric was tightened, and

@@ -27,7 +27,7 @@ chunk so neither model's full logits are ever held at once.
 | Sampling | temperature 1.0, thinking off, the eval prompt, at most 1,024 tokens |
 | Optimiser | lr 2e-4, cosine, 3% warmup, 16 rows per step (ADR 0006, untuned) |
 | Length | one epoch over the train prompts, a checkpoint every 500 steps, as A and B; capped at about 12 GPU-hours |
-| Sampling engine | vLLM colocated with sleep mode if it fits next to training and the teacher; HF `generate` otherwise |
+| Sampling engine | vLLM colocated with sleep mode: it fitted next to training and the teacher (#53) |
 
 - **GPU-hours start at 0** and every step counts the student's sampling, the teacher's forward pass
   and the update, so the teacher's cost is inside D's curve.
@@ -53,7 +53,8 @@ chunk so neither model's full logits are ever held at once.
   `fc-eval`'s by a few rows.
 - **B→D**, continuing B's adapter with D's loss for one epoch, is a **pipeline**, reported as
   "B then D", not as method D. It becomes the next run if D doesn't beat B on validation; otherwise
-  it stays a stretch goal. This amends ADR 0007, where D started from B.
+  it stays a stretch goal. D didn't, so it ran (#58; see Consequences). This amends ADR 0007, where
+  D started from B.
 
 ## Considered options
 

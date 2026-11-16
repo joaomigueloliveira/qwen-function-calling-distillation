@@ -210,7 +210,7 @@ not ambiguous, came from it, and a rescan moved 13 such rows from ambiguous to w
 This is shown as is: the rules were settled with the reviewer after comparing the disagreements, so it
 isn't a second independent check. A fresh blind sample under the tightened rubric would be one. Details:
 [`results/label-audit.md`](../results/label-audit.md#review) and the
-[review sheet](../results/label-audit-review.md).
+[review sheet](notes/label-audit-review.md).
 
 ### 7. Train likely has about 10,000 unsound labels too
 
@@ -220,8 +220,9 @@ Test is a random sample of xLAM, so train very likely has a similar share of uns
 → ADR [0005](adr/0005-train-and-validation-keep-label-noise.md):
 
 - **Train keeps its gold answers.** Rows leave train only through filters that detect a problem without
-  judgement. Placeholders and values found in neither query nor spec are candidates, measured on train
-  first (#17).
+  judgement. Placeholders and values found in neither query nor spec were the candidates;
+  #17 measured them and found too few audit-wrong rows among those they would remove, so neither is
+  applied (ADR 0005, addendum).
 - **Validation is not audited** unless a method's gain on raw test is much larger than its gain on
   `test-clean`, the sign that it learned xLAM's quirks.
 - **Teacher outputs are filtered with lenient exact**, so the filter keeps the teacher's defensible

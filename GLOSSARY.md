@@ -14,7 +14,8 @@ Qwen3.5-2B, the model whose outputs or logits the student learns from.
 
 **Method**:
 One way of training the student, compared with the others per GPU-hour: A, SFT on gold labels; B,
-SFT on teacher outputs; C, logit distillation; D, on-policy distillation; E, GRPO.
+SFT on teacher outputs; C, logit distillation; D, on-policy distillation; E, GRPO (a stretch goal,
+not run).
 _Avoid_: arm
 
 **Label-free method**:
@@ -59,6 +60,35 @@ B), or the teacher's probabilities over the vocabulary there (soft; C and D).
 
 **Run**:
 One training job of a method or variant, with its own checkpoints and its own W&B run.
+
+**Teacher output**:
+The teacher's answer to a train row's query, parsed and written back as JSON calls. B's training
+text; C trains on the same text.
+
+**Teacher pass**:
+A run of the teacher over train, done once before training and counted in the methods' GPU-hours:
+generating teacher outputs (B, C), or storing its top 20 token probabilities on them (C).
+
+**Selected checkpoint**:
+The checkpoint of a run with the best strict exact on validation, a tie going to the earlier
+(ADR 0006). The only one scored on test, test-clean and BFCL. Informally, the pick.
+_Avoid_: best model (alone)
+
+**GPU-hours**:
+A method's cost on the one RTX 3060, from zero up to a checkpoint: its teacher passes plus training.
+Validation scoring isn't counted.
+
+**At B's budget**:
+A label-free method's best validation checkpoint within B's GPU-hours, scored like a selected
+checkpoint (ADR 0008).
+
+**Headline method**:
+The label-free method the README's claim names, chosen by ADR 0009's rule among the methods
+test-clean can't separate.
+
+**Readout**:
+A measurement reported to explain a result and never used to choose: BFCL along a run, agreement
+with the teacher, the default-made-explicit rows, the share of fenced or multi-line answers.
 
 **Baseline**:
 An untrained model used as a reference point: the student, the teacher, the 4B.
@@ -128,6 +158,18 @@ The share of test rows with a sound label: the best strict exact score an always
 reach on test.
 
 ## Scoring
+
+**McNemar test**:
+The paired test used to compare two models: it counts only the rows where exactly one of them is
+right.
+
+**Holm**:
+The adjustment applied to the p-values of all the README's claims together, so that testing many
+claims doesn't make one look significant by chance.
+
+**BFCL**:
+1,000 single-turn rows of the Berkeley Function-Calling Leaderboard, with tools the student never
+trained on, converted to xLAM's prompt. An eval only: nothing is chosen on it.
 
 **Strict exact**:
 A prediction matches when its multiset of calls equals the gold answer's. The headline metric.
