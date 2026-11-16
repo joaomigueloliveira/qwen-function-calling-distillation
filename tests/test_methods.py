@@ -15,6 +15,7 @@ from fc_distill.methods import (
     teacher_counts,
     validity,
 )
+from fc_distill.tracking import RUN_ID_FILE
 from tests.factories import make_example
 
 TOOL = {
@@ -104,7 +105,7 @@ def test_build_selects_per_method_compares_and_renders(
     monkeypatch.setattr(methods, "load_split", lambda split, path: examples)
     # A's training run was logged to W&B; B's wasn't
     (tmp_path / a.train_run).mkdir()
-    (tmp_path / a.train_run / "wandb_run_id").write_text("hmjki6iw\n")
+    (tmp_path / a.train_run / RUN_ID_FILE).write_text("hmjki6iw\n")
 
     data = build(tmp_path, splits)
 

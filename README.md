@@ -81,11 +81,13 @@ nondeterminism in vLLM).
 *Accuracy against GPU-hours.* Left: validation at every checkpoint, the teacher's passes included;
 rings mark each run's pick. Right: each pick on test-clean; hollow markers used labels. Data:
 [`docs/figures/cost-accuracy.json`](docs/figures/cost-accuracy.json), from `results/methods.json`
-(`uv run fc-figures`). Training curves on W&B:
+(`uv run fc-figures`). Each run's training curves on W&B:
 [A](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw),
 [B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog),
 [C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9),
-[D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw).
+[D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw),
+[grounded B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/v1r4ks64), [filtered B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko),
+[filtered C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6), [B then D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ra29h5ha).
 More figures (BFCL along the runs, the default and format readouts): [`docs/figures/`](docs/figures/).
 
 Each claim below compares two models on the same rows with a paired McNemar test; "Holm" is that

@@ -2,8 +2,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 from fc_distill.figures import bfcl_along, cost_accuracy, main, readouts, wandb_links
 
 
@@ -133,7 +131,6 @@ def test_wandb_links_point_at_each_training_run_in_the_public_project() -> None:
 
 
 def test_fc_figures_writes_each_figure_as_json_and_light_and_dark_svg(tmp_path: Path) -> None:
-    pytest.importorskip("matplotlib")
     results = tmp_path / "methods.json"
     results.write_text(json.dumps(DATA))
 

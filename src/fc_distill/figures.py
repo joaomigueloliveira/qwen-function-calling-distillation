@@ -168,6 +168,9 @@ THEMES = {
     },
 }
 
+# How the baselines are named on a line (long) and at the top of a narrow panel (short).
+BASELINE_NAMES = {"raw 0.8B": ("untrained 0.8B", "0.8B"), "raw 2B": ("2B teacher", "2B")}
+
 # Where a line's label goes when its end would sit on another line: at the line's start, or nudged
 # up or down (points). Set by eye on the current results.
 COST_LABELS: dict[str, tuple[str, float]] = {"B": ("start", 0)}
@@ -186,9 +189,9 @@ CAPTIONS = {
         "Each point's 95% interval is about ±2.5 points (in the JSON, not drawn)."
     ),
     "readouts": (
-        "Left: exact match on the 123 test-clean rows where gold and a baseline differed only by "
-        "an optional argument at its default. Middle and right: the share of test-clean answers "
-        "that are fenced or span several lines; the scorer reads both."
+        "Left: exact match on the {defaults} test-clean rows where gold and a baseline differed "
+        "only by an optional argument at its default. Middle and right: the share of test-clean "
+        "answers that are fenced or span several lines; the scorer reads both."
     ),
 }
 
@@ -211,12 +214,14 @@ def _title(ax: "Axes", t: Mapping[str, str], text: str, size: float = 11) -> Non
     ax.set_title(text, loc="left", fontsize=size, color=t["text"])
 
 
-def _baseline(ax: "Axes", t: Mapping[str, str], y: float, label: str, *, vertical: bool) -> None:
+def _baseline(
+    ax: "Axes", t: Mapping[str, str], value: float, label: str, *, vertical: bool
+) -> None:
     if vertical:
-        ax.axvline(y, color=t["muted"], linestyle=(0, (4, 3)), linewidth=1)
+        ax.axvline(value, color=t["muted"], linestyle=(0, (4, 3)), linewidth=1)
         ax.annotate(
             label,
-            (y, 1),
+            (value, 1),
             xycoords=("data", "axes fraction"),
             xytext=(3, -2),
             textcoords="offset points",
@@ -225,10 +230,10 @@ def _baseline(ax: "Axes", t: Mapping[str, str], y: float, label: str, *, vertica
             color=t["muted"],
         )
     else:
-        ax.axhline(y, color=t["muted"], linestyle=(0, (4, 3)), linewidth=1)
+        ax.axhline(value, color=t["muted"], linestyle=(0, (4, 3)), linewidth=1)
         ax.annotate(
             label,
-            (0, y),
+            (0, value),
             xycoords=("axes fraction", "data"),
             xytext=(4, 3),
             textcoords="offset points",
@@ -301,7 +306,7 @@ def _cost_accuracy_figure(fig_data: Mapping[str, Rows], t: Mapping[str, str]) ->
             _line(left, t, key, rows[0]["labels"], rows, COST_LABELS.get(key, ("end", 0)))
     for b in fig_data["baselines"]:
         if b["split"] == "validation":
-            name = "2B teacher" if b["model"] == "raw 2B" else "untrained 0.8B"
+            name = BASELINE_NAMES[b["model"]][0]
             _baseline(left, t, 100 * b["exact"], name, vertical=False)
     left.set_xlabel("GPU-hours (RTX 3060)")
     left.set_ylabel("exact match, validation (%)")
@@ -335,7 +340,7 @@ def _cost_accuracy_figure(fig_data: Mapping[str, Rows], t: Mapping[str, str]) ->
     right.set_yticks(range(len(picks)), [LABELS[r["method"]] for r in picks])
     for b in fig_data["baselines"]:
         if b["split"] == "test-clean":
-            name = "2B" if b["model"] == "raw 2B" else "0.8B"
+            name = BASELINE_NAMES[b["model"]][1]
             _baseline(right, t, 100 * b["exact"], name, vertical=True)
     right.set_xlim(50, 100)
     right.set_ylim(-0.7, len(picks) - 0.3)
@@ -358,7 +363,7 @@ def _bfcl_figure(fig_data: Mapping[str, Rows], t: Mapping[str, str]) -> Any:
     for key, rows in by_method.items():
         _line(ax, t, key, rows[0]["labels"], rows, BFCL_LABELS.get(key, ("end", 0)))
     for b in fig_data["baselines"]:
-        name = "2B teacher" if b["model"] == "raw 2B" else "untrained 0.8B"
+        name = BASELINE_NAMES[b["model"]][0]
         _baseline(ax, t, 100 * b["exact"], name, vertical=False)
     ax.set_xlim(right=ax.get_xlim()[1] * 1.08)
     ax.yaxis.set_major_locator(MultipleLocator(5))
@@ -414,6 +419,7 @@ DRAW: dict[str, Callable[[Any, Mapping[str, str]], Any]] = {
 def figures(data: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     """Each figure's rows, caption, source and W&B links: what the site draws, and the SVGs."""
     every = tuple(data["methods"])
+    default_rows = next(iter(data["defaults"].values()))["rows"]
     bfcl = tuple(k for k in BFCL_RUNS if k in data["methods"])
     shaped: dict[str, tuple[Any, tuple[str, ...]]] = {
         "cost-accuracy": (cost_accuracy(data), every),
@@ -422,7 +428,7 @@ def figures(data: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     }
     return {
         name: {
-            "caption": CAPTIONS[name],
+            "caption": CAPTIONS[name].format(defaults=default_rows),
             "source": SOURCE,
             "wandb": wandb_links(data, keys),
             "data": rows,
