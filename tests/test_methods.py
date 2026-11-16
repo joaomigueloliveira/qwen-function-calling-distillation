@@ -15,6 +15,7 @@ from fc_distill.methods import (
     teacher_counts,
     validity,
 )
+from fc_distill.tracking import RUN_ID_FILE
 from tests.factories import make_example
 
 TOOL = {
@@ -102,10 +103,15 @@ def test_build_selects_per_method_compares_and_renders(
     _write_run(tmp_path / "eval-train-Qwen_Qwen3.5-2B", teacher, {"seconds": 3600.0})
     examples = [make_example(i) | {"tools": [TOOL]} for i in range(2)]
     monkeypatch.setattr(methods, "load_split", lambda split, path: examples)
+    # A's training run was logged to W&B; B's wasn't
+    (tmp_path / a.train_run).mkdir()
+    (tmp_path / a.train_run / RUN_ID_FILE).write_text("hmjki6iw\n")
 
     data = build(tmp_path, splits)
 
     assert data["methods"]["A"]["selected"] == 1000
+    assert data["methods"]["A"]["wandb_run"] == "hmjki6iw"
+    assert data["methods"]["B"]["wandb_run"] is None
     assert data["methods"]["B"]["selected"] == 500
     assert data["methods"]["A"]["official"]["test-clean"]["n"] == 4
     assert "test" not in data["methods"]["B"]["official"]

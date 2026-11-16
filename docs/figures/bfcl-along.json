@@ -1,0 +1,312 @@
+{
+ "caption": "Exact match on BFCL, tools never seen in training, at every checkpoint scored there, against GPU-hours. Rings mark the pick, which validation chose; dashed lines used labels. Each point's 95% interval is about ±2.5 points (in the JSON, not drawn).",
+ "source": "results/methods.json",
+ "wandb": {
+  "B": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog",
+  "Bf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko",
+  "D": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw",
+  "Cf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6"
+ },
+ "data": {
+  "runs": [
+   {
+    "method": "B",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 1.997,
+    "exact": 0.727,
+    "ci": [
+     0.6986,
+     0.7537
+    ],
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 2.554,
+    "exact": 0.779,
+    "ci": [
+     0.7522,
+     0.8036
+    ],
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 3.119,
+    "exact": 0.791,
+    "ci": [
+     0.7647,
+     0.8151
+    ],
+    "pick": true
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 3.679,
+    "exact": 0.789,
+    "ci": [
+     0.7626,
+     0.8132
+    ],
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 2500,
+    "gpu_hours": 4.237,
+    "exact": 0.801,
+    "ci": [
+     0.7751,
+     0.8246
+    ],
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 4.798,
+    "exact": 0.809,
+    "ci": [
+     0.7835,
+     0.8322
+    ],
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 3277,
+    "gpu_hours": 5.108,
+    "exact": 0.811,
+    "ci": [
+     0.7856,
+     0.8341
+    ],
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 500,
+    "gpu_hours": 1.968,
+    "exact": 0.768,
+    "ci": [
+     0.7408,
+     0.7931
+    ],
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 2.5,
+    "exact": 0.808,
+    "ci": [
+     0.7824,
+     0.8312
+    ],
+    "pick": true
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 1500,
+    "gpu_hours": 3.043,
+    "exact": 0.805,
+    "ci": [
+     0.7793,
+     0.8284
+    ],
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 2000,
+    "gpu_hours": 3.593,
+    "exact": 0.826,
+    "ci": [
+     0.8013,
+     0.8482
+    ],
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 2356,
+    "gpu_hours": 3.981,
+    "exact": 0.83,
+    "ci": [
+     0.8055,
+     0.852
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 2.223,
+    "exact": 0.787,
+    "ci": [
+     0.7606,
+     0.8113
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 4.501,
+    "exact": 0.778,
+    "ci": [
+     0.7512,
+     0.8027
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 6.804,
+    "exact": 0.782,
+    "ci": [
+     0.7554,
+     0.8065
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 9.08,
+    "exact": 0.798,
+    "ci": [
+     0.772,
+     0.8217
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 2500,
+    "gpu_hours": 11.344,
+    "exact": 0.818,
+    "ci": [
+     0.7929,
+     0.8407
+    ],
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 13.542,
+    "exact": 0.825,
+    "ci": [
+     0.8002,
+     0.8473
+    ],
+    "pick": true
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 3410,
+    "gpu_hours": 15.383,
+    "exact": 0.819,
+    "ci": [
+     0.7939,
+     0.8416
+    ],
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 500,
+    "gpu_hours": 3.093,
+    "exact": 0.815,
+    "ci": [
+     0.7897,
+     0.8378
+    ],
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 3.629,
+    "exact": 0.841,
+    "ci": [
+     0.817,
+     0.8624
+    ],
+    "pick": true
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 1500,
+    "gpu_hours": 4.177,
+    "exact": 0.827,
+    "ci": [
+     0.8023,
+     0.8492
+    ],
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 2000,
+    "gpu_hours": 4.722,
+    "exact": 0.835,
+    "ci": [
+     0.8107,
+     0.8567
+    ],
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 2356,
+    "gpu_hours": 5.105,
+    "exact": 0.843,
+    "ci": [
+     0.8191,
+     0.8642
+    ],
+    "pick": false
+   }
+  ],
+  "baselines": [
+   {
+    "model": "raw 0.8B",
+    "exact": 0.645
+   },
+   {
+    "model": "raw 2B",
+    "exact": 0.827
+   }
+  ]
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "caption": "Left: exact match on the 123 test-clean rows where gold and a baseline differed only by an optional argument at its default. Middle and right: the share of test-clean answers that are fenced or span several lines; the scorer reads both.",
+ "source": "results/methods.json",
+ "wandb": {
+  "A": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw",
+  "B": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog",
+  "Bf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko",
+  "Bg": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/v1r4ks64",
+  "C": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9",
+  "Cf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6",
+  "D": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw",
+  "B→D": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ra29h5ha"
+ },
+ "data": [
+  {
+   "model": "raw 0.8B",
+   "default_made_explicit": 0.1707,
+   "fenced": 0.0018,
+   "multi_line": 0.3145
+  },
+  {
+   "model": "raw 2B",
+   "default_made_explicit": 0.2033,
+   "fenced": 0.0363,
+   "multi_line": 0.0603
+  },
+  {
+   "model": "A",
+   "default_made_explicit": 0.7886,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  {
+   "model": "B",
+   "default_made_explicit": 0.4228,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  {
+   "model": "Bf",
+   "default_made_explicit": 0.4715,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  {
+   "model": "Bg",
+   "default_made_explicit": 0.5366,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  },
+  {
+   "model": "C",
+   "default_made_explicit": 0.374,
+   "fenced": 0.0554,
+   "multi_line": 0.016
+  },
+  {
+   "model": "Cf",
+   "default_made_explicit": 0.5122,
+   "fenced": 0.0289,
+   "multi_line": 0.0252
+  },
+  {
+   "model": "D",
+   "default_made_explicit": 0.3252,
+   "fenced": 0.0111,
+   "multi_line": 0.0308
+  },
+  {
+   "model": "B→D",
+   "default_made_explicit": 0.2358,
+   "fenced": 0.0,
+   "multi_line": 0.0
+  }
+ ]
+}

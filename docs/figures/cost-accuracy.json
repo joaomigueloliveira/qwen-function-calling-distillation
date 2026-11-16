@@ -1,0 +1,522 @@
+{
+ "caption": "Left: exact match on validation at every checkpoint against GPU-hours, the teacher's passes included, for A, B, C and D; rings mark each run's pick (its best validation score, ADR 0006). Right: each method's pick on test-clean with its 95% interval; hollow markers used labels. Dashed lines: the untrained 0.8B and the 2B teacher.",
+ "source": "results/methods.json",
+ "wandb": {
+  "A": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw",
+  "B": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog",
+  "Bf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko",
+  "Bg": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/v1r4ks64",
+  "C": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9",
+  "Cf": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6",
+  "D": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw",
+  "B→D": "https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ra29h5ha"
+ },
+ "data": {
+  "checkpoints": [
+   {
+    "method": "A",
+    "labels": true,
+    "step": 500,
+    "gpu_hours": 0.558,
+    "exact": 0.787,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 1.115,
+    "exact": 0.81,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 1500,
+    "gpu_hours": 1.684,
+    "exact": 0.808,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 2000,
+    "gpu_hours": 2.249,
+    "exact": 0.842,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 2500,
+    "gpu_hours": 2.805,
+    "exact": 0.837,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 3000,
+    "gpu_hours": 3.375,
+    "exact": 0.844,
+    "pick": false
+   },
+   {
+    "method": "A",
+    "labels": true,
+    "step": 3411,
+    "gpu_hours": 3.835,
+    "exact": 0.847,
+    "pick": true
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 1.997,
+    "exact": 0.625,
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 2.554,
+    "exact": 0.7,
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 3.119,
+    "exact": 0.708,
+    "pick": true
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 3.679,
+    "exact": 0.698,
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 2500,
+    "gpu_hours": 4.237,
+    "exact": 0.7,
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 4.798,
+    "exact": 0.699,
+    "pick": false
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 3277,
+    "gpu_hours": 5.108,
+    "exact": 0.701,
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 500,
+    "gpu_hours": 1.968,
+    "exact": 0.731,
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 2.5,
+    "exact": 0.766,
+    "pick": true
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 1500,
+    "gpu_hours": 3.043,
+    "exact": 0.75,
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 2000,
+    "gpu_hours": 3.593,
+    "exact": 0.763,
+    "pick": false
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 2356,
+    "gpu_hours": 3.981,
+    "exact": 0.759,
+    "pick": false
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 1.964,
+    "exact": 0.693,
+    "pick": false
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 2.492,
+    "exact": 0.674,
+    "pick": false
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 3.015,
+    "exact": 0.7,
+    "pick": true
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 3.543,
+    "exact": 0.696,
+    "pick": false
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 2120,
+    "gpu_hours": 3.67,
+    "exact": 0.696,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 3.572,
+    "exact": 0.652,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 4.135,
+    "exact": 0.697,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 4.701,
+    "exact": 0.711,
+    "pick": true
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 5.261,
+    "exact": 0.706,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 2500,
+    "gpu_hours": 5.819,
+    "exact": 0.691,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 6.381,
+    "exact": 0.691,
+    "pick": false
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 3277,
+    "gpu_hours": 6.689,
+    "exact": 0.694,
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 500,
+    "gpu_hours": 3.093,
+    "exact": 0.687,
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 3.629,
+    "exact": 0.737,
+    "pick": true
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 1500,
+    "gpu_hours": 4.177,
+    "exact": 0.734,
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 2000,
+    "gpu_hours": 4.722,
+    "exact": 0.727,
+    "pick": false
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 2356,
+    "gpu_hours": 5.105,
+    "exact": 0.735,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 2.223,
+    "exact": 0.7,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 4.501,
+    "exact": 0.657,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 6.804,
+    "exact": 0.703,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 2000,
+    "gpu_hours": 9.08,
+    "exact": 0.691,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 2500,
+    "gpu_hours": 11.344,
+    "exact": 0.699,
+    "pick": false
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 13.542,
+    "exact": 0.706,
+    "pick": true
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 3410,
+    "gpu_hours": 15.383,
+    "exact": 0.706,
+    "pick": false
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 100,
+    "gpu_hours": 3.527,
+    "exact": 0.677,
+    "pick": false
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 200,
+    "gpu_hours": 3.938,
+    "exact": 0.69,
+    "pick": false
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 300,
+    "gpu_hours": 4.353,
+    "exact": 0.689,
+    "pick": false
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 400,
+    "gpu_hours": 4.773,
+    "exact": 0.704,
+    "pick": true
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 500,
+    "gpu_hours": 5.185,
+    "exact": 0.691,
+    "pick": false
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 1000,
+    "gpu_hours": 7.35,
+    "exact": 0.684,
+    "pick": false
+   }
+  ],
+  "picks": [
+   {
+    "method": "A",
+    "labels": true,
+    "step": 3411,
+    "gpu_hours": 3.835,
+    "exact": 0.9323,
+    "ci": [
+     0.919,
+     0.9435
+    ]
+   },
+   {
+    "method": "B",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 3.119,
+    "exact": 0.8338,
+    "ci": [
+     0.815,
+     0.8512
+    ]
+   },
+   {
+    "method": "Bf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 2.5,
+    "exact": 0.8566,
+    "ci": [
+     0.8387,
+     0.8728
+    ]
+   },
+   {
+    "method": "Bg",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 3.015,
+    "exact": 0.8289,
+    "ci": [
+     0.8098,
+     0.8465
+    ]
+   },
+   {
+    "method": "C",
+    "labels": false,
+    "step": 1500,
+    "gpu_hours": 4.701,
+    "exact": 0.8252,
+    "ci": [
+     0.806,
+     0.8429
+    ]
+   },
+   {
+    "method": "Cf",
+    "labels": true,
+    "step": 1000,
+    "gpu_hours": 3.629,
+    "exact": 0.8492,
+    "ci": [
+     0.831,
+     0.8658
+    ]
+   },
+   {
+    "method": "D",
+    "labels": false,
+    "step": 3000,
+    "gpu_hours": 13.542,
+    "exact": 0.8326,
+    "ci": [
+     0.8137,
+     0.85
+    ]
+   },
+   {
+    "method": "B→D",
+    "labels": false,
+    "step": 400,
+    "gpu_hours": 4.773,
+    "exact": 0.8166,
+    "ci": [
+     0.7971,
+     0.8347
+    ]
+   }
+  ],
+  "baselines": [
+   {
+    "model": "raw 0.8B",
+    "split": "validation",
+    "exact": 0.466
+   },
+   {
+    "model": "raw 2B",
+    "split": "validation",
+    "exact": 0.68
+   },
+   {
+    "model": "raw 0.8B",
+    "split": "test-clean",
+    "exact": 0.5477
+   },
+   {
+    "model": "raw 2B",
+    "split": "test-clean",
+    "exact": 0.768
+   }
+  ]
+ }
+}

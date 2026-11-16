@@ -29,6 +29,7 @@ from fc_distill.evaluate import read_run
 from fc_distill.scoring import call_multiset, parse_calls, validity
 from fc_distill.slices import argument_source, grounded
 from fc_distill.stats import holm, mcnemar, metric_block
+from fc_distill.tracking import RUN_ID_FILE
 
 
 class Method(NamedTuple):
@@ -328,11 +329,14 @@ def build(
             records = _records(runs, run, split, clean)
             if records is not None:
                 official[split] = keep(m.key, split, records)
+        wandb_id = runs / m.train_run / RUN_ID_FILE
         methods[m.key] = {
             "name": m.name,
             "labels": m.labels,
             "after": m.after,
             "train_run": m.train_run,
+            # The training run's curves on W&B, for the figures' links (#31).
+            "wandb_run": wandb_id.read_text().strip() if wandb_id.exists() else None,
             "checkpoints": checkpoints,
             "selected": step,
             "tied": tied,
