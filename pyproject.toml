@@ -31,6 +31,8 @@ fc-opd = "fc_distill.opd:main"
 fc-serve = "fc_distill.serving:main"
 fc-teacher-topk = "fc_distill.teacher_topk:main"
 fc-figures = "fc_distill.figures:main"
+fc-examples = "fc_distill.examples:main"
+fc-probe = "fc_distill.probe:main"
 
 [dependency-groups]
 dev = [

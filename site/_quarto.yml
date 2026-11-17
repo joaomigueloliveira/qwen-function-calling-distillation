@@ -4,12 +4,17 @@ project:
   type: website
   output-dir: _site
   pre-render: _prepare.py
-  resources: [assets/*.json, essay.js]
+  resources: [assets/*.json, assets/og-card.png, essay.js]
 
 website:
   title: "Distilling function calling"
   site-url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
   repo-url: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
+  description: "Distilling function calling from Qwen3.5-2B into Qwen3.5-0.8B without labels, on one 12 GB GPU: SFT on teacher outputs, logit and on-policy distillation, paired tests."
+  image: assets/og-card.png
+  open-graph: true
+  twitter-card:
+    card-style: summary_large_image
   navbar:
     title: "Distilling function calling"
     right:

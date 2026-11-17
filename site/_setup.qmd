@@ -106,6 +106,52 @@ def ladder() -> HTML:
     return HTML(f'<div class="ladder" role="img" aria-label="Exact match on xLAM test-clean">{"".join(parts)}</div>')
 
 
+EXAMPLES = {e["key"]: e for e in json.loads((ROOT / "results" / "examples.json").read_text())["examples"]}
+
+
+def _signature(tool: dict) -> str:
+    params = tool.get("parameters") or {}
+    args = ", ".join(f"{k}: {v.get('type', '?')}" if isinstance(v, dict) else k for k, v in params.items())
+    return f"{tool['name']}({args})"
+
+
+def _marked(text: str, gold: str) -> str:
+    """`text` with the words that differ from `gold` marked, for a wrong answer."""
+    import difflib
+    import html as h
+    import re
+
+    a, b = re.findall(r"\w+|\W", gold), re.findall(r"\w+|\W", text)
+    out = []
+    for op, _, _, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        chunk = h.escape("".join(b[j1:j2]))
+        out.append(chunk if op == "equal" else f"<mark>{chunk}</mark>")
+    return "".join(out)
+
+
+def example(key: str) -> HTML:
+    """One worked example (results/examples.json): the query, the tools, gold and each answer."""
+    import html as h
+
+    e = EXAMPLES[key]
+    gold = json.dumps(e["gold"], ensure_ascii=False)
+    tools = "<br>".join(h.escape(_signature(t)) for t in e["tools"])
+    rows = [
+        f'<div class="ex-row"><span class="ex-k">Query</span><span class="ex-q">{h.escape(e["query"])}</span></div>',
+        f'<div class="ex-row"><span class="ex-k">Tools</span><code>{tools}</code></div>',
+        f'<div class="ex-row"><span class="ex-k">Gold</span><code>{h.escape(gold)}</code></div>',
+    ]
+    for a in e["answers"]:
+        text = a["prediction"].strip()
+        body = h.escape(text) if a["exact"] or e["split"] == "bfcl" else _marked(text, gold)
+        mark = '<span class="ok">right</span>' if a["exact"] else '<span class="no">wrong</span>'
+        who = badge_html(a["model"]) if a["model"] in LABELS else h.escape(a["model"])
+        rows.append(f'<div class="ex-row ans"><span class="ex-k">{who} {mark}</span><code>{body}</code></div>')
+    if e.get("note"):
+        rows.append(f'<div class="ex-row"><span class="ex-k">Audit</span><span class="ex-q">{h.escape(e["note"])}</span></div>')
+    return HTML(f'<div class="example">{"".join(rows)}</div>')
+
+
 def _cells(cells: list[str]) -> str:
     return "".join(f"<td>{c}</td>" for c in cells)
 ```

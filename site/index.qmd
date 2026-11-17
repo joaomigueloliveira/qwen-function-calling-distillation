@@ -4,6 +4,10 @@ subtitle: "Qwen3.5-2B teaches Qwen3.5-0.8B to call tools, on one 12 GB GPU"
 author: "João Oliveira"
 date: 2026-11-17
 date-format: "MMMM YYYY"
+citation:
+  type: webpage
+  url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
+appendix-cite-as: [display, bibtex]
 include-after-body:
   - text: <script src="essay.js"></script>
 ---
@@ -104,6 +108,17 @@ and the tool specs, write this gold answer?* The labelling was blind to which mo
 
 : The label audit, over the test rows any baseline got wrong. {#tbl-audit}
 
+::: {#fig-gold-wrong}
+
+```{python}
+example("gold-wrong")
+```
+
+A gold label the audit found wrong (the shortest such test row where B disagrees with gold). Every
+model here is wrong, but strict exact against this gold would also mark a right answer wrong.
+Rows like this are why methods are compared on test-clean.
+:::
+
 **test-clean** is test without the ambiguous and wrong rows, `{python} n(splits["test-clean"])`
 rows, and it is where methods are compared. On raw test, a method can gain by learning gold's
 quirks, such as which of two reasonable answers xLAM happened to choose. Test's labels themselves are
@@ -203,14 +218,14 @@ This is sequence-level distillation[^kim]. The runs: [#42]({{< var repo >}}/issu
 ### Soft targets: the teacher's whole distribution
 
 A hard target says the written token is right and every other token is wrong. But at every position
-the teacher has an opinion about all 248,320 tokens in its vocabulary. @fig-token shows three
-positions of one answer, measured on both models.
+the teacher has an opinion about all 248,320 tokens in its vocabulary. @fig-token shows it along
+one answer, measured on both models.
 
 ::: {#fig-token}
 
 ```{=html}
 <div class="widget" id="w-token">
-<p class="lead">The teacher's answer to <em>"Give me the forecast for Lisbon."</em>, one token at a time. Pick a position:</p>
+<p class="lead">The teacher's answer to <em>"Give me the forecast for Lisbon."</em>. Pick a position where it hesitates, or one where it is sure:</p>
 <div class="seg"></div>
 <div class="tokline"></div>
 <svg class="chart" role="img" aria-label="Teacher and student next-token probabilities"></svg>
@@ -225,9 +240,10 @@ positions of one answer, measured on both models.
 ```
 
 Hard and soft targets differ only where the teacher hesitates. The 2B's and the untrained 0.8B's
-real next-token probabilities at three positions of one answer (a made-up query, measured on the
-3060), with each method's loss there in nats. The top 20 tokens, all C stores, hold nearly all of the
-teacher's probability.
+next-token probabilities along the 2B's answer to a made-up query, measured on the 3060, with each
+method's loss there in nats. The 2B hesitates twice: between a list and a code fence at the first
+token, and over whether to write `days` out at its default. The top 20 tokens, all C stores, hold
+nearly all of its probability.
 :::
 
 A soft target trains the student toward the teacher's whole distribution $p$, with the forward KL
@@ -236,7 +252,7 @@ divergence:
 $$\mathcal{L}_\text{soft} = \mathrm{KL}(p \,\|\, q) = \sum_v p(v) \log \frac{p(v)}{q(v)}.$$
 
 The hard target is the special case of a teacher that puts all its probability on one token. So the
-two only differ where the teacher hesitates, as it does over the value of `days`. **C**, logit
+two only differ where the teacher hesitates, as it does over whether to write `days` at all. **C**, logit
 distillation, runs on B's rows and B's text exactly; the 2B scores that text once more and stores
 its 20 likeliest tokens at every answer position, plus one entry for everything else. C − B then
 isolates soft against hard targets.
@@ -290,8 +306,9 @@ list one token early, and from there on writes prefixes B and C never trained on
 
 ```{=html}
 <div class="widget" id="w-grade">
-<p class="lead">The student's answer to <em>"weather in Porto, in Fahrenheit"</em>. Click a piece:</p>
+<p class="lead"></p>
 <div class="tokrow"></div>
+<p class="gold tokline"></p>
 <div class="readout">
 <div><div class="label">p student</div><div class="value" data-o="ps"></div></div>
 <div><div class="label">p teacher</div><div class="value" data-o="pt"></div></div>
@@ -301,9 +318,13 @@ list one token early, and from there on writes prefixes B and C never trained on
 </div>
 ```
 
-The teacher grades every token the student wrote. Red pieces are where the student was surer than
-the teacher, and the loss pushes them down; green, where they agree. The probabilities are made up
-for the illustration; the arithmetic is D's.
+The teacher grades every token the student wrote. Each token is shaded by
+$\log q - \log p$, the student's log-probability minus the teacher's: red where the student was
+surer, green where the teacher was. Measured: the untrained 0.8B's own answer to a real test-clean
+row (the shortest one it gets wrong and the 2B gets right), and both models' probabilities for each of
+its tokens. The student calls the right tool once, with the wrong argument name, and stops; the
+heaviest penalty falls on the token that closes the list after one call, where the teacher expected
+a second.
 :::
 
 Unlike reinforcement learning, which gives one reward per answer, every token gets feedback. The
@@ -375,10 +396,9 @@ Filtered B: [#60]({{< var repo >}}/issues/60); grounded B: [#74]({{< var repo >}
 
 ## Results
 
-@fig-cost puts every run on one chart: accuracy against everything it cost, the teacher's passes
-included.
+@fig-cost puts every method on one chart: its score on test-clean against everything it cost.
 
-{{< include _cost.qmd >}}
+{{< include _cost_clean.qmd >}}
 
 ### The label-free methods tie, so the simplest is the headline
 
@@ -400,6 +420,17 @@ first call cut short, and repairing them makes almost none right. Nor is it memo
 test-clean query appears verbatim in train, and B's lead is larger on rows whose tools train never offered. What it is
 remains open; running the 2B on its own answers would test whether it is self-training.
 
+::: {#fig-beats}
+
+```{python}
+example("beats-teacher")
+```
+
+Where the student beats its teacher (the shortest test-clean row where B is right and the 2B wrong).
+The 2B computes the answer itself instead of calling the tool; B, trained on the 2B's own answers,
+calls it. Differences from gold are marked.
+:::
+
 On BFCL's unseen tools B doesn't keep its lead: it is below the 2B, though not after Holm
 [(`{python} story.claim("B", "raw 2B", "bfcl")`)]{.stat}, getting argument values wrong on tools it
 never saw.
@@ -414,11 +445,19 @@ their picks [(`{python} story.claim("Cf", "Bf", "bfcl")`)]{.stat}, and gets ther
 filtered B keeps rising, and at the end of their epochs the two are not significantly different.
 Faster, not better.
 
+::: {#fig-unseen}
+
+```{python}
+example("unseen-tools")
+```
+
+On a tool neither saw in training (the shortest BFCL row where D is right and B wrong), B reads
+"5,10" as one number. D, trained on its own attempts, makes the three calls.
+:::
+
 {{< include _bfcl.qmd >}}
 
-### Per GPU-hour, on-policy shows no advantage
-
-D's only checkpoint within B's GPU-hours (step `{python} d_budget["step"]`,
+Nor does on-policy pay off per GPU-hour: D's only checkpoint within B's GPU-hours (step `{python} d_budget["step"]`,
 `{python} f"{d_budget['gpu_hours']:.1f}"` GPU-hours) scores
 `{python} pct(d_budget["official"]["test-clean"]["exact"])` on test-clean, against B's
 `{python} story.score("B")`
@@ -440,7 +479,16 @@ argument written at its default, A gets `{python} pct(M["defaults"]["A"]["defaul
 right, B `{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)` and the 2B
 `{python} pct(M["defaults"]["raw 2B"]["default_made_explicit"], 0)`.
 
-{{< include _readouts.qmd >}}
+::: {#fig-fenced}
+
+```{python}
+example("fenced")
+```
+
+C's answer in the teacher's code fence (the shortest test-clean row where C fences its answer). The
+scorer reads the JSON inside the fence, so this one still counts as right.
+:::
+
 
 ### The student serves faster
 
@@ -478,3 +526,23 @@ Every number in this essay is computed from the repository's
 [results/]({{< var repo >}}/tree/main/results) when the site builds. [Every result](results.qmd)
 lists each method at its selected checkpoint, and [Decisions](decisions/index.qmd) gives every
 design decision with the options it weighed.
+
+## Reproduce it
+
+Everything runs from the [repository]({{< var repo >}}) with [uv](https://docs.astral.sh/uv/), on
+one NVIDIA GPU, after accepting xLAM's terms on the Hugging Face Hub. The commands behind this essay:
+
+```bash
+uv sync --extra inference --extra train
+uv run --no-sync fc-sft      # SFT methods (A, B, C)
+uv run --no-sync fc-opd      # on-policy (D)
+uv run --no-sync fc-eval     # any model or checkpoint
+uv run --no-sync fc-report --methods   # results/methods.json
+uv run --no-sync fc-examples           # results/examples.json
+uv run --extra train fc-probe          # data/probe/
+uv run fc-figures                      # docs/figures/
+uv run --group site quarto render site # this site
+```
+
+Each method's exact command and settings are in its run's issue, linked in the margin where the
+method appears.
