@@ -82,6 +82,12 @@ def _prompt_length(row: Mapping[str, Any]) -> int:
     return len(row["query"]) + len(json.dumps(row["tools"]))
 
 
+def shortest[R: Mapping[str, Any]](rows: Sequence[R]) -> R:
+    """The row with the shortest prompt (query plus tool specs), ties to the lowest id: the rule
+    every worked example and probe row is chosen by, so none is picked by hand."""
+    return min(rows, key=lambda r: (_prompt_length(r), _id_order(r["id"])))
+
+
 def worked_examples(
     xlam: Sequence[Mapping[str, Any]],
     bfcl: Sequence[Mapping[str, Any]],
@@ -102,7 +108,7 @@ def worked_examples(
         ]
         if not rows:
             continue
-        best = min(rows, key=lambda r: (_prompt_length(r), _id_order(r["id"])))
+        best = shortest(rows)
         example: Example = {
             "key": cat.key,
             "split": cat.split,
@@ -131,10 +137,11 @@ MODELS = ("B", "C", "D", "raw 2B")
 
 def _run_name(model: str, methods: Mapping[str, Any]) -> str:
     """A model's eval run name: a method's selected checkpoint, or a baseline's model id."""
-    from fc_distill.methods import METHODS, TEACHER
+    from fc_distill.methods import BASELINES, METHODS
 
-    if model == "raw 2B":
-        return TEACHER
+    baseline = {name: model_id for model_id, name in BASELINES.items()}
+    if model in baseline:
+        return baseline[model]
     train_run = next(m.train_run for m in METHODS if m.key == model)
     return f"{train_run}-checkpoint-{methods['methods'][model]['selected']}"
 
@@ -142,13 +149,13 @@ def _run_name(model: str, methods: Mapping[str, Any]) -> str:
 def load_runs(runs_dir: Path, methods: Mapping[str, Any], clean: set[int]) -> dict[str, Any]:
     """split -> model -> row id -> record, for every model the categories show."""
     from fc_distill.evaluate import read_run
-    from fc_distill.methods import _eval_dir
+    from fc_distill.methods import eval_dir
 
     out: dict[str, dict[str, dict[Any, Record]]] = {}
     for split in ("test-clean", "test", "bfcl"):
         out[split] = {}
         for model in MODELS:
-            _, records = read_run(runs_dir / _eval_dir(split, _run_name(model, methods)))
+            _, records = read_run(runs_dir / eval_dir(split, _run_name(model, methods)))
             keep = [r for r in records if split != "test-clean" or r["id"] in clean]
             out[split][model] = {r["id"]: r for r in keep}
     return out
@@ -183,7 +190,8 @@ def main() -> None:
                     "Worked examples for the story site (#107), one per category, each the "
                     "qualifying row with the shortest prompt (ties to the lowest id). Rows from "
                     "xLAM-60k (Salesforce, CC-BY-4.0) and BFCL (Apache-2.0); answers are each "
-                    "model's selected checkpoint's greedy output. Built by fc-examples."
+                    "method's selected checkpoint's greedy output, or the untrained 2B's. Built by "
+                    "fc-examples."
                 ),
                 "examples": examples,
             },

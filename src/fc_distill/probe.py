@@ -18,6 +18,8 @@ from typing import Any
 
 import numpy as np
 
+from fc_distill.methods import STUDENT, TEACHER, eval_dir
+
 
 def summarize_position(
     teacher: np.ndarray, student: np.ndarray, vocab: Sequence[str], k: int = 8, bins: int = 120
@@ -47,7 +49,6 @@ def summarize_position(
     return out
 
 
-TEACHER, STUDENT = "Qwen/Qwen3.5-2B", "Qwen/Qwen3.5-0.8B"
 FORECAST_QUERY = "Give me the forecast for Lisbon."
 # Made up in xLAM's format: `days` is optional with a default, which is where the teacher hesitates.
 FORECAST_TOOLS = [
@@ -69,8 +70,6 @@ FORECAST_TOOLS = [
         "parameters": {"city": {"description": "The city name.", "type": "str"}},
     },
 ]
-STUDENT_RUN = "eval-test-Qwen_Qwen3.5-0.8B"
-TEACHER_RUN = "eval-test-Qwen_Qwen3.5-2B"
 
 
 def _prompt_ids(tok: Any, messages: Sequence[Any]) -> list[int]:
@@ -129,21 +128,18 @@ def forecast(tok: Any, teacher: Any, student: Any) -> dict[str, Any]:
 def grading_row(runs_dir: Any) -> tuple[dict[str, Any], str]:
     """The test-clean row the 0.8B gets wrong and the 2B right with the shortest prompt (ties to the
     lowest id), and the 0.8B's greedy answer to it from its eval run."""
-    import json
-    from pathlib import Path
-
-    from fc_distill.data import DEFAULT_SPLITS_PATH, load_split
+    from fc_distill.data import load_split
     from fc_distill.evaluate import read_run
+    from fc_distill.examples import shortest
 
-    clean = set(json.loads(Path(DEFAULT_SPLITS_PATH).read_text())["test-clean"])
-    student = {r["id"]: r for r in read_run(runs_dir / STUDENT_RUN)[1]}
-    teacher = {r["id"]: r for r in read_run(runs_dir / TEACHER_RUN)[1]}
+    student = {r["id"]: r for r in read_run(runs_dir / eval_dir("test", STUDENT))[1]}
+    teacher = {r["id"]: r for r in read_run(runs_dir / eval_dir("test", TEACHER))[1]}
     rows = [
         ex
-        for ex in load_split("test")
-        if ex["id"] in clean and not student[ex["id"]]["exact"] and teacher[ex["id"]]["exact"]
+        for ex in load_split("test-clean")
+        if not student[ex["id"]]["exact"] and teacher[ex["id"]]["exact"]
     ]
-    best = min(rows, key=lambda ex: (len(ex["query"]) + len(json.dumps(ex["tools"])), ex["id"]))
+    best = shortest(rows)
     return dict(best), student[best["id"]]["prediction"]
 
 

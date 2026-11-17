@@ -200,7 +200,7 @@ def output_format(records: Sequence[Mapping[str, Any]]) -> dict[str, float]:
     return {"n": n, "fenced": round(fenced / n, 4), "multi_line": round(multi / n, 4)}
 
 
-def _eval_dir(split: str, run: str) -> str:
+def eval_dir(split: str, run: str) -> str:
     """The eval run an official split is read from: test-clean comes from the test run."""
     return f"eval-{'test' if split == 'test-clean' else split}-{run.replace('/', '_')}"
 
@@ -283,11 +283,11 @@ def build(
     for model, label in BASELINES.items():
         official_baselines[label] = {}
         for split in OFFICIAL:
-            records = _records(runs, _eval_dir(split, model), split, clean)
+            records = _records(runs, eval_dir(split, model), split, clean)
             if records is not None:
                 official_baselines[label][split] = keep(model, split, records)
 
-    teacher_bfcl = _records(runs, _eval_dir("bfcl", TEACHER), "bfcl", clean)
+    teacher_bfcl = _records(runs, eval_dir("bfcl", TEACHER), "bfcl", clean)
     methods: dict[str, Any] = {}
     for m in METHODS:
         start = 0.0
@@ -308,7 +308,7 @@ def build(
             block = keep(f"{m.key}@{step}", "validation", records)
             # BFCL at every checkpoint scored there: explanation only, never selection (#70).
             bfcl = _records(
-                runs, _eval_dir("bfcl", f"{m.train_run}-checkpoint-{step}"), "bfcl", clean
+                runs, eval_dir("bfcl", f"{m.train_run}-checkpoint-{step}"), "bfcl", clean
             )
             checkpoints.append(
                 {"step": step, "gpu_hours": round(start + summary["adapter"]["gpu_hours"], 3)}
@@ -379,7 +379,7 @@ def build(
             official = {}
             for split in OFFICIAL:
                 records = _records(
-                    runs, _eval_dir(split, f"{m.train_run}-checkpoint-{step}"), split, clean
+                    runs, eval_dir(split, f"{m.train_run}-checkpoint-{step}"), split, clean
                 )
                 if records is not None:
                     official[split] = keep(who, split, records)

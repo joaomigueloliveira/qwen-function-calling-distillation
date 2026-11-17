@@ -1,5 +1,5 @@
 {
- "about": "Worked examples for the story site (#107), one per category, each the qualifying row with the shortest prompt (ties to the lowest id). Rows from xLAM-60k (Salesforce, CC-BY-4.0) and BFCL (Apache-2.0); answers are each model's selected checkpoint's greedy output. Built by fc-examples.",
+ "about": "Worked examples for the story site (#107), one per category, each the qualifying row with the shortest prompt (ties to the lowest id). Rows from xLAM-60k (Salesforce, CC-BY-4.0) and BFCL (Apache-2.0); answers are each method's selected checkpoint's greedy output, or the untrained 2B's. Built by fc-examples.",
  "examples": [
   {
    "key": "beats-teacher",

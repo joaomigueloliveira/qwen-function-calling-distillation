@@ -115,7 +115,8 @@ example("gold-wrong")
 ```
 
 A gold label the audit found wrong (the shortest such test row where B disagrees with gold). Every
-model here is wrong, but strict exact against this gold would also mark a right answer wrong.
+model here is wrong, and the marks show differences from a gold the audit found wrong: strict exact
+against it would also mark a right answer wrong.
 Rows like this are why methods are compared on test-clean.
 :::
 
@@ -323,8 +324,8 @@ $\log q - \log p$, the student's log-probability minus the teacher's: red where 
 surer, green where the teacher was. Measured: the untrained 0.8B's own answer to a real test-clean
 row (the shortest one it gets wrong and the 2B gets right), and both models' probabilities for each of
 its tokens. The student calls the right tool once, with the wrong argument name, and stops; the
-heaviest penalty falls on the token that closes the list after one call, where the teacher expected
-a second.
+heaviest penalty falls on the token that ends the call after Amazon, where the teacher expected a
+second call, for Google.
 :::
 
 Unlike reinforcement learning, which gives one reward per answer, every token gets feedback. The
@@ -350,7 +351,7 @@ a small model. @fig-peaks shows the difference.
 </div>
 ```
 
-A one-peaked student fitting a teacher torn between two answers, say `5` and `5.0`. Try a wide
+An illustration: a one-peaked student fitting a teacher torn between two answers, say `5` and `5.0`. Try a wide
 student in the middle, then a narrow one on either peak: forward KL prefers the first, reverse KL the
 second. For tool calls, committing to one clean answer is what exact match rewards.
 :::
@@ -398,7 +399,7 @@ Filtered B: [#60]({{< var repo >}}/issues/60); grounded B: [#74]({{< var repo >}
 
 @fig-cost puts every method on one chart: its score on test-clean against everything it cost.
 
-{{< include _cost_clean.qmd >}}
+{{< include _cost_picks.qmd >}}
 
 ### The label-free methods tie, so the simplest is the headline
 
@@ -452,7 +453,8 @@ example("unseen-tools")
 ```
 
 On a tool neither saw in training (the shortest BFCL row where D is right and B wrong), B reads
-"5,10" as one number. D, trained on its own attempts, makes the three calls.
+"5,10" as one number. D, trained on its own attempts, makes the three calls. B's differences from D's
+answer are marked.
 :::
 
 {{< include _bfcl.qmd >}}
@@ -530,19 +532,16 @@ design decision with the options it weighed.
 ## Reproduce it
 
 Everything runs from the [repository]({{< var repo >}}) with [uv](https://docs.astral.sh/uv/), on
-one NVIDIA GPU, after accepting xLAM's terms on the Hugging Face Hub. The commands behind this essay:
+one NVIDIA GPU, after accepting xLAM's terms on the Hugging Face Hub. The commands that turn the runs into this essay:
 
 ```bash
 uv sync --extra inference --extra train
-uv run --no-sync fc-sft      # SFT methods (A, B, C)
-uv run --no-sync fc-opd      # on-policy (D)
-uv run --no-sync fc-eval     # any model or checkpoint
-uv run --no-sync fc-report --methods   # results/methods.json
-uv run --no-sync fc-examples           # results/examples.json
-uv run --extra train fc-probe          # data/probe/
-uv run fc-figures                      # docs/figures/
-uv run --group site quarto render site # this site
+uv run --no-sync fc-report --methods     # results/methods.json, from the runs
+uv run --no-sync fc-examples             # results/examples.json
+uv run --extra train fc-probe            # data/probe/
+uv run fc-figures                        # docs/figures/
+uv run --group site quarto render site   # this site
 ```
 
-Each method's exact command and settings are in its run's issue, linked in the margin where the
-method appears.
+Each run's training and eval commands, with their flags (`fc-sft`, `fc-opd`, `fc-eval`), are in its
+issue, linked in the margin where the method appears.

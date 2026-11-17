@@ -141,9 +141,13 @@ def example(key: str) -> HTML:
         f'<div class="ex-row"><span class="ex-k">Tools</span><code>{tools}</code></div>',
         f'<div class="ex-row"><span class="ex-k">Gold</span><code>{h.escape(gold)}</code></div>',
     ]
+    # A wrong answer is marked against gold; on BFCL, whose gold lists acceptable values rather
+    # than one answer, against the right answer beside it.
+    right = next((a["prediction"].strip() for a in e["answers"] if a["exact"]), gold)
+    reference = right if e["split"] == "bfcl" else gold
     for a in e["answers"]:
         text = a["prediction"].strip()
-        body = h.escape(text) if a["exact"] or e["split"] == "bfcl" else _marked(text, gold)
+        body = h.escape(text) if a["exact"] else _marked(text, reference)
         mark = '<span class="ok">right</span>' if a["exact"] else '<span class="no">wrong</span>'
         who = badge_html(a["model"]) if a["model"] in LABELS else h.escape(a["model"])
         rows.append(f'<div class="ex-row ans"><span class="ex-k">{who} {mark}</span><code>{body}</code></div>')
