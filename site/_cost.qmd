@@ -1,3 +1,5 @@
+::: {#fig-cost}
+
 ```{ojs}
 //| echo: false
 fig = d3.json(root + "assets/cost-accuracy.json")
@@ -7,11 +9,11 @@ viewof shown = Inputs.checkbox(Object.keys(names), {label: "Methods", value: ["A
 ```{ojs}
 //| echo: false
 rows = fig.data.checkpoints.filter(d => shown.includes(d.method))
-ends = Array.from(d3.group(rows, d => d.method).values(), g => g[g.length - 1])
+ends = Array.from(d3.group(rows, d => d.method).values(), g => g[0].method === "B" ? g[0] : g[g.length - 1])
 Plot.plot({
   width: Math.min(width, 860), height: 380, marginRight: 80, marginBottom: 46, style: {fontSize: "13px"},
   x: {label: "GPU-hours on one RTX 3060 →", domain: [0, 16], labelAnchor: "center", labelOffset: 38},
-  y: {label: "↑ exact match on validation (%)", domain: [40, 90], grid: true},
+  y: {label: "↑ exact match on validation (%)", domain: [40, 90], grid: true, ticks: [40, 50, 60, 70, 80, 90]},
   marks: [
     Plot.ruleY(fig.data.baselines.filter(b => b.split === "validation"), {y: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
     Plot.text(fig.data.baselines.filter(b => b.split === "validation"), {x: 0, y: d => 100 * d.exact, text: d => d.model === "raw 2B" ? "2B teacher" : "untrained 0.8B", dy: -7, textAnchor: "start", fill: "#898781"}),
@@ -20,7 +22,8 @@ Plot.plot({
     Plot.dot(rows.filter(d => d.pick), {x: "gpu_hours", y: d => 100 * d.exact, r: 8, stroke: d => colors[d.method], strokeWidth: 1.5}),
     Plot.dot(rows, {x: "gpu_hours", y: d => 100 * d.exact, fill: d => colors[d.method], r: 3.5,
       tip: true, title: d => `${names[d.method]}, step ${d.step}${d.pick ? " (selected)" : ""}\n${d.gpu_hours.toFixed(2)} GPU-hours\n${(100 * d.exact).toFixed(1)}% on validation`}),
-    Plot.text(ends, {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 8, textAnchor: "start"}),
+    Plot.text(ends.filter(d => d.method !== "B"), {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: 8, textAnchor: "start", fill: d => colors[d.method], fontWeight: 600}),
+    Plot.text(ends.filter(d => d.method === "B"), {x: "gpu_hours", y: d => 100 * d.exact, text: d => names[d.method], dx: -8, textAnchor: "end", fill: d => colors[d.method], fontWeight: 600}),
   ],
 })
 ```
@@ -43,8 +46,8 @@ Plot.plot({
 })
 ```
 
-::: {.caption}
-Top: exact match on validation at every checkpoint, against GPU-hours (the teacher's passes
+The label-free methods end in one band just above the teacher; only training on labels (A) climbs
+clear of it. Top: exact match on validation at every checkpoint, against GPU-hours (the teacher's passes
 included); rings mark each run's selected checkpoint, dashed lines used labels. Bottom: each selected
 checkpoint on test-clean, with its 95% interval; hollow dots used labels. Hover for details. Training
 curves: [W&B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation).

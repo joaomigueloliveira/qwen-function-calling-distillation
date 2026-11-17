@@ -1,3 +1,5 @@
+::: {#fig-readouts}
+
 ```{ojs}
 readouts = d3.json(root + "assets/readouts.json")
 viewof readout = Inputs.radio(new Map([
@@ -17,7 +19,6 @@ Plot.plot({
 })
 ```
 
-::: {.caption}
-Readouts on test-clean, never used to choose a checkpoint. Default rows: the rows where gold and a
+Each method copies the habits of whatever it was trained on. Readouts on test-clean, never used to choose a checkpoint. Default rows: the rows where gold and a
 baseline differ only by an optional argument written out at its default.
 :::

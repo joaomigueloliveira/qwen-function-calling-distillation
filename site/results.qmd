@@ -1,29 +1,24 @@
 ---
-title: "Results"
-subtitle: "Every method side by side"
+title: "Every result"
+subtitle: "Each method at its selected checkpoint, side by side"
 ---
 
 {{< include /_setup.qmd >}}
 
-**Without labels, SFT on the 2B's own answers (B) took Qwen3.5-0.8B from
-`{python} h["before"]` to `{python} h["after"]` exact match on xLAM test-clean, past its teacher's
-`{python} h["teacher"]` and `{python} h["share_of_a"]` of what gold labels gain, in
-`{python} h["gpu_hours"]` GPU-hours on one 12 GB card.** On-policy distillation (D), logit
-distillation (C) and grounded B can't be separated from it on test-clean. D leads B's selected
-checkpoint on unseen tools, at `{python} f"{d_cost / b_cost:.1f}"`× the cost; with one seed, that
-can't be told apart from more training.
+This page is the reference behind [the essay](index.qmd): every method at the checkpoint validation
+chose, and the figures along every run. Each pairwise comparison, with its paired test under strict
+and lenient exact, is in
+[results/methods.md]({{< var repo >}}/blob/main/results/methods.md).
 
 ## Every method
-
-Each at its selected checkpoint: strict exact match on validation, test, test-clean and BFCL.
 
 ```{python}
 table(["B", "Bg", "C", "D", "B→D", "Bf", "Cf", "A"], baselines=True)
 ```
 
-Hover a method for its full name; each has its own page under Experiments. Every comparison between
-two of them, with its paired test, strict and lenient:
-[results/methods.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/methods.md).
+Strict exact match on validation, test, test-clean and BFCL. GPU-hours count everything a method
+needs on the one RTX 3060, the teacher's passes included; validation scoring is the same for every
+method and isn't counted. The headline method, B, is highlighted.
 
 ## Accuracy and cost
 
@@ -41,13 +36,11 @@ two of them, with its paired test, strict and lenient:
 
 In vLLM on the same card, the 0.8B answers **`{python} serve["one_at_a_time"]` faster** than the 2B
 one request at a time, and serves **`{python} serve["batched"]` cheaper** with every test-clean
-prompt batched: the prompts are long and the answers short, so batching narrows the gap.
-
-The headline model is B at step `{python} story.facts("B")["step"]`, a LoRA adapter on the 0.8B.
-Its own serving run and its release on the Hugging Face Hub are
-[#96](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/issues/96).
+prompt batched. The headline model is B at step `{python} story.facts("B")["step"]`, a LoRA adapter
+on the 0.8B; its release on the Hugging Face Hub is [#96]({{< var repo >}}/issues/96).
 
 ::: {.column-margin}
-Settings and every run:
-[results/serving.md](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/blob/main/results/serving.md).
+Settings and every run: [results/serving.md]({{< var repo >}}/blob/main/results/serving.md).
+Training curves: each method's W&B run, linked from
+[results/methods.md]({{< var repo >}}/blob/main/results/methods.md).
 :::

@@ -1,88 +1,172 @@
-/* The story site's look: one serif for prose, one sans for everything around it, one accent. */
+/* The story site's look, after the Thinking Machines essays: a serif reading column, a quiet sans
+   for everything around it (contents, notes, captions, tables), one accent, lots of white. */
 :root {
-  --ink: #1b1b1a; --ink-2: #52514e; --muted: #898781; --rule: #e6e4dd; --surface: #fcfcfb;
-  --tint: #f3f2ee; --accent: #2a78d6; --accent-tint: #eaf2fc;
+  --ink: #1b1b1a; --ink-2: #52514e; --muted: #898781; --rule: #e6e4dd; --surface: #fdfdfc;
+  --tint: #f4f3ef; --accent: #2a78d6; --accent-tint: #eaf2fc;
   --serif: "Source Serif 4", Georgia, serif;
   --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* One background everywhere: no two-tone side columns. */
 body, .navbar, #quarto-sidebar, .sidebar, #quarto-margin-sidebar, .nav-footer { background: var(--surface) !important; }
 .navbar { border-bottom: 1px solid var(--rule); box-shadow: none; }
-#quarto-sidebar { border-right: 1px solid var(--rule); }
+.navbar-title { font-weight: 600; letter-spacing: -.01em; font-size: 1rem; }
+.navbar .nav-link { font-size: .9rem; color: var(--ink-2) !important; }
+.navbar .nav-link.active { color: var(--ink) !important; font-weight: 600; }
 
-/* Type */
+/* Type: serif for the essay and its headings, sans around it */
 body { color: var(--ink); font-family: var(--sans); }
-main p, main li, main blockquote { font-family: var(--serif); font-size: 1.08rem; line-height: 1.68; }
-h1, h2, h3, h4, .title, .subtitle, .navbar, .sidebar, #TOC, .breadcrumb, .nav-page, .callout,
-.column-margin, .caption, table, .nav-footer, .tiles, .key, .sections, .cta { font-family: var(--sans); }
-h1.title { font-weight: 700; letter-spacing: -.02em; }
-p.subtitle { color: var(--ink-2); font-size: 1.15rem; }
-h2 { margin-top: 2.6rem; font-weight: 650; letter-spacing: -.012em; border-bottom: 1px solid var(--rule); padding-bottom: .3rem; }
-h3 { margin-top: 1.9rem; font-weight: 600; }
-code, pre code { font-family: var(--mono); font-size: .86em; }
-a { color: var(--accent); }
-.sidebar-item-text, .sidebar-link { font-size: .92rem; }
-.sidebar-link.active .menu-text { color: var(--accent) !important; font-weight: 600; }
-.navbar .nav-link.active { color: inherit !important; }
+main p, main li, main blockquote { font-family: var(--serif); font-size: 1.1rem; line-height: 1.65; }
+main h1, main h2, main h3, .title { font-family: var(--serif); color: var(--ink); }
+main h2 { margin-top: 3.2rem; font-size: 1.75rem; font-weight: 600; letter-spacing: -.01em; border: 0; padding: 0; }
+main h3 { margin-top: 2.2rem; font-size: 1.25rem; font-weight: 600; }
+#TOC, .sidebar, .nav-footer, .caption, figcaption, table, .column-margin, .margin-aside,
+.footnotes, .csl-entry, .callout, .stat, .byline, .summary, .ladder { font-family: var(--sans); }
+code, pre code { font-family: var(--mono); font-size: .84em; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+strong { font-weight: 650; }
 
-/* Margin notes; inline on narrow screens, set apart */
-.column-margin, .margin-aside { font-size: .82rem; line-height: 1.5; color: var(--ink-2); }
+/* Title block: centred, like an essay's first page */
+#title-block-header { text-align: center; margin: 1.5rem auto 2.5rem; }
+h1.title { font-size: clamp(2rem, 4.6vw, 2.7rem); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+p.subtitle { font-family: var(--sans); color: var(--ink-2); font-size: 1.05rem; margin-top: .6rem; }
+.quarto-title-meta { justify-content: center; font-size: .85rem; }
+.quarto-title-meta-heading { display: none; }
+.quarto-title-meta-contents p { font-family: var(--sans); font-size: .88rem; color: var(--ink-2); margin: 0; }
+
+/* Contents on the left, small and grey; the current section in ink */
+#TOC { font-size: .8rem; }
+#toc-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+#TOC .nav-link { color: var(--muted); padding: .18rem 0 .18rem .6rem; }
+#TOC .nav-link.active { color: var(--ink); border-left-color: var(--ink); }
+
+/* Margin notes and sidenotes: grey, small; set apart inline on narrow screens */
+.column-margin, .margin-aside, .footnotes, aside { font-size: .8rem; line-height: 1.5; color: var(--ink-2); }
+.column-margin p, aside p { font-family: var(--sans); font-size: .8rem; line-height: 1.5; }
 @media (max-width: 991.98px) {
-  .column-margin { border-left: 3px solid var(--rule); background: var(--tint); padding: .55rem .8rem; margin: .8rem 0; border-radius: 0 6px 6px 0; }
+  .column-margin { border-left: 2px solid var(--rule); padding: .2rem 0 .2rem .8rem; margin: .6rem 0 1rem; }
 }
 
+/* Statistics: kept beside each claim, but quiet */
+.stat { font-size: .78em; color: var(--muted); white-space: nowrap; }
+
+/* The summary at the top: the claim, the ladder, the takeaways */
+.summary { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 1.6rem 0 .6rem; margin-bottom: 2.4rem; }
+.summary .claim p { font-family: var(--serif); font-size: clamp(1.3rem, 2.8vw, 1.6rem); line-height: 1.35; font-weight: 500; margin: 0 0 1.2rem; }
+.summary ol { padding-left: 1.2rem; }
+.summary li { font-family: var(--sans) !important; font-size: .98rem !important; line-height: 1.55 !important; margin-bottom: .45rem; }
+
+/* The ladder: four scores on one 50–100% track */
+.ladder { position: relative; height: 128px; margin: 1.2rem 28px 1.6rem; }
+.ladder .track { position: absolute; left: 0; right: 0; top: 62px; height: 2px; background: var(--rule); }
+.ladder .tick { position: absolute; top: 72px; font-size: .68rem; color: var(--muted); transform: translateX(-50%); }
+.ladder .pt { position: absolute; top: 56px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--c); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--c); }
+.ladder .pt.hollow { background: var(--surface); }
+.ladder .lab { position: absolute; transform: translateX(-50%); text-align: center; white-space: nowrap; line-height: 1.2; }
+.ladder .lab.up { bottom: 76px; } .ladder .lab.down { top: 90px; }
+.ladder .lab b { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--c); }
+.ladder .lab span { font-size: .72rem; color: var(--ink-2); }
+
+/* A task, set like the essay's example prompts */
+.task { background: var(--tint); border-radius: 8px; padding: .9rem 1.1rem; margin: 1.2rem 0 .4rem; font-family: var(--mono); font-size: .8rem; line-height: 1.7; overflow-x: auto; }
+.task div { white-space: pre; }
+.task .k { display: inline-block; width: 4.6rem; color: var(--muted); font-family: var(--sans); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; }
+
 /* Method badges, in each method's chart colour */
-.m { display: inline-flex; align-items: center; gap: .32em; font-family: var(--sans); font-weight: 600; font-size: .86em;
-  padding: .02em .5em; border: 1px solid var(--rule); border-radius: 999px; background: #fff; white-space: nowrap; }
-.m::before { content: ""; width: .58em; height: .58em; border-radius: 50%; background: var(--c, var(--muted)); }
+.m { display: inline-flex; align-items: center; gap: .32em; font-family: var(--sans); font-weight: 600; font-size: .86em; white-space: nowrap; }
+.m::before { content: ""; width: .6em; height: .6em; border-radius: 50%; background: var(--c, var(--muted)); }
 .m-A { --c: #52514e; } .m-B { --c: #2a78d6; } .m-Bf { --c: #1baf7a; } .m-Bg { --c: #e87ba4; }
 .m-C { --c: #008300; } .m-Cf { --c: #eda100; } .m-D { --c: #e34948; } .m-BD { --c: #eb6834; }
+.mname { display: block; font-weight: 400; font-size: .76rem; color: var(--muted); margin-left: 1em; }
 
-/* Home: the summary is set in the sans, not the prose serif */
-main .hero p, main .tiles p, main .key p, main .sections p, main .cta p, main .what p { font-family: var(--sans); }
-main .hero .claim p { font-size: clamp(1.45rem, 3.4vw, 2.15rem); line-height: 1.22; font-weight: 700; letter-spacing: -.02em; margin: .6rem 0 .4rem; }
-main .hero .what p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; }
-.hero .claim { font-size: clamp(1.45rem, 3.4vw, 2.15rem); line-height: 1.22; font-weight: 700; letter-spacing: -.02em; margin: .6rem 0 .4rem; }
-.hero .what { color: var(--ink-2); font-size: 1rem; margin-bottom: 1rem; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 22px 0 26px; }
-.tile { border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; background: #fff; }
-.tile .n { display: block; font-size: 2rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--ink); }
-.tile:first-child .n { color: var(--accent); }
-.tile .l { display: block; font-size: .8rem; color: var(--ink-2); line-height: 1.35; }
-.takeaways li { margin-bottom: .5rem; }
-.cta a { display: inline-block; background: var(--accent); color: #fff !important; text-decoration: none; font-weight: 600;
-  padding: .6rem 1.1rem; border-radius: 8px; margin: .4rem .5rem .4rem 0; }
-.cta a.secondary { background: #fff; color: var(--accent) !important; border: 1px solid var(--rule); }
-.sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
-.sections p { margin: 0; }
-.sections a { display: block; height: 100%; border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; background: #fff;
-  color: var(--ink); text-decoration: none; font-size: .92rem; line-height: 1.45; }
-.sections a strong { display: block; color: var(--accent); margin-bottom: .2rem; }
-.sections a:hover { border-color: var(--accent); }
-
-/* Key result box at the top of a page */
-.key { border-left: 4px solid var(--accent); background: var(--accent-tint); border-radius: 0 10px 10px 0;
-  padding: .8rem 1rem; margin: 1rem 0 1.4rem; font-size: .98rem; line-height: 1.5; }
-.key p { font-family: var(--sans); font-size: .98rem; margin: 0; }
-
-/* Tables: one font, aligned figures, no wrapping method names, scroll on phones */
-.table-scroll { overflow-x: auto; margin: 1rem 0 1.4rem; }
-table { font-size: .9rem; font-variant-numeric: tabular-nums; }
+/* Tables: sans, one rule under the header, hairlines between rows, no stripes */
+main table, main .table { font-size: .86rem; font-variant-numeric: tabular-nums; margin: 1.4rem 0 .4rem; }
+main .table > :not(caption) > * > * { background: transparent !important; box-shadow: none !important; padding: .45rem .6rem; border-bottom-color: var(--rule); }
+main .table thead th, table.results th { font-weight: 600; color: var(--ink-2); font-size: .76rem; border-bottom: 1px solid var(--ink) !important; }
+main td p { font-family: var(--sans); font-size: .86rem; margin: 0; }
+.table-scroll { overflow-x: auto; margin: 1.4rem 0 .4rem; }
 table.results { width: 100%; border-collapse: collapse; }
-table.results th, table.results td { padding: .45rem .6rem; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
-table.results th { font-weight: 600; color: var(--ink-2); font-size: .8rem; }
+table.results th, table.results td { padding: .45rem .6rem; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; vertical-align: top; }
 table.results th:first-child, table.results td:first-child { text-align: left; }
-table.results td.what { text-align: left; color: var(--ink-2); white-space: normal; min-width: 12rem; }
+table.results tr.group td { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; padding-top: 1rem; border-bottom: 0; }
 table.results tr.headline td { background: var(--accent-tint); }
 table.results tr.baseline td { color: var(--ink-2); }
 
-/* Figures sit on the page, not on white boxes */
+/* Figures: on the page, numbered, with a small grey caption */
 svg[class^="plot"], svg[class*=" plot"], .observablehq svg { background: transparent !important; }
-.caption { font-size: .84rem; color: var(--ink-2); line-height: 1.5; margin-top: .3rem; }
+figcaption, .caption, .figure-caption { font-size: .82rem !important; color: var(--ink-2) !important; line-height: 1.5; margin-top: .6rem; text-align: left; }
+.quarto-float-caption .quarto-float-caption-label, figcaption strong:first-child { color: var(--ink); font-weight: 600; }
+.quarto-float { margin: 1.8rem 0 2rem; }
+form label, .observablehq form { font-family: var(--sans); font-size: .85rem; }
 
 /* Decisions */
-.status { display: inline-block; font-family: var(--sans); font-size: .78rem; font-weight: 600; padding: .05em .55em;
+.status { display: inline-block; font-family: var(--sans); font-size: .76rem; font-weight: 600; padding: .05em .55em;
   border-radius: 999px; background: #e9f6ee; color: #1c6b3a; white-space: nowrap; }
-.amended { font-family: var(--sans); font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.amended { font-family: var(--sans); font-size: .76rem; color: var(--muted); white-space: nowrap; }
+
+/* Quarto centres floats; an essay reads left-aligned */
+main figure, main .quarto-float, main .quarto-figure, main figcaption, main caption, main .table caption { text-align: left !important; }
+main .quarto-float figure > div { text-align: left; }
+main .table td, main .table th { text-align: left; }
+main .table td:last-child, main .table th:last-child { text-align: right; }
+#tbl-methods .table td:last-child, #tbl-methods .table th:last-child { text-align: left; }
+caption, .table caption { caption-side: bottom; font-family: var(--sans); font-size: .82rem; color: var(--ink-2); padding-top: .6rem; }
+
+/* The question */
+main blockquote { border-left: 3px solid var(--accent); padding: .1rem 0 .1rem 1.1rem; margin: 1.4rem 0; color: var(--ink); }
+main blockquote p { font-size: 1.22rem; line-height: 1.45; color: var(--ink); }
+
+table.results tr.group td { text-align: left !important; }
+table.results td:first-child { white-space: normal; min-width: 9rem; }
+.ladder .lab span { display: block; white-space: normal; width: 6.5rem; margin: 0 auto; }
+@media (max-width: 575.98px) { .ladder .lab span { width: 5.2rem; font-size: .66rem; } .ladder .tick { font-size: .6rem; } }
+
+/* ---- Concept figures (essay.js). Teacher violet, student teal, gold grey, in every one. ---- */
+:root { --teacher: #6a4fc7; --teacher-tint: #eeeafb; --student: #0f8a7e; --student-tint: #e3f4f1;
+  --gold: #6f6d67; --gold-tint: #efeee9; --good: #1baf7a; --bad: #e34948; --amber: #d98c00; --amber-tint: #fdf1d8; }
+.widget { border: 1px solid var(--rule); border-radius: 10px; padding: 1rem 1.1rem .8rem; background: #fff; font-family: var(--sans); }
+.widget svg { width: 100%; height: auto; display: block; margin: .4rem 0 .2rem; }
+.widget .note { font-family: var(--sans); font-size: .84rem; color: var(--ink-2); margin: .6rem 0 0; line-height: 1.5; min-height: 2.6em; }
+.widget .lead { font-family: var(--sans); font-size: .8rem; color: var(--muted); margin: 0 0 .5rem; }
+.seg { display: flex; flex-wrap: wrap; gap: .35rem; margin: .3rem 0 .5rem; }
+.seg button { font-family: var(--mono); font-size: .8rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink);
+  border-radius: 6px; padding: .22rem .6rem; cursor: pointer; }
+.seg button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.seg.words button { font-family: var(--sans); }
+.keys { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .76rem; color: var(--ink-2); }
+.keys span::before { content: ""; display: inline-block; width: .7em; height: .7em; border-radius: 2px; background: var(--c); margin-right: .35em; vertical-align: -.05em; }
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .6rem; margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--rule); }
+.readout .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.readout .value { font-family: var(--mono); font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--ink); }
+.tokline { font-family: var(--mono); font-size: .78rem; line-height: 2; color: var(--muted); word-break: break-all; }
+.tokline span { white-space: pre; }
+.tokline .cur { color: var(--ink); background: var(--amber-tint); outline: 1.5px solid var(--amber); border-radius: 3px; padding: 0 1px; }
+.tokrow { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin: .35rem 0; }
+.tokrow .who { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); width: 7.5rem; flex-shrink: 0; }
+.tok { font-family: var(--mono); font-size: .78rem; white-space: pre; padding: .12rem .3rem; border-radius: 4px; }
+.tok.t { background: var(--teacher-tint); color: var(--teacher); }
+.tok.s { background: var(--student-tint); color: var(--student); }
+.tok.seen { background: var(--gold-tint); color: var(--ink-2); }
+.tok.unseen { background: var(--amber-tint); color: #8a5a00; }
+.tok.err { outline: 1.5px solid var(--bad); }
+#w-grade .tokrow button { font-family: var(--mono); font-size: .8rem; white-space: pre; }
+.controls { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .82rem; color: var(--ink-2); }
+.controls input[type=range] { width: 9rem; vertical-align: middle; accent-color: var(--student); }
+
+/* The methods map: who writes the text, what each token teaches */
+.mmap { font-family: var(--sans); }
+.mmap .mrow, .mmap .mhead { display: grid; grid-template-columns: 8.5rem 1fr 1fr; gap: .9rem; align-items: center; padding: .7rem 0; border-bottom: 1px solid var(--rule); }
+.mmap .mhead { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 0; border-bottom: 1px solid var(--ink); }
+.mmap .mid small { display: block; color: var(--muted); font-size: .74rem; margin-top: .1rem; }
+.mmap .src { border-radius: 7px; padding: .45rem .7rem; font-size: .8rem; font-weight: 600; }
+.mmap .src code { display: block; font-weight: 400; font-size: .74rem; margin-top: .15rem; background: none; color: inherit; padding: 0; }
+.mmap .src.gold { background: var(--gold-tint); color: var(--gold); }
+.mmap .src.teacher { background: var(--teacher-tint); color: var(--teacher); }
+.mmap .src.student { background: var(--student-tint); color: var(--student); }
+.mmap .sig { display: flex; align-items: center; gap: .7rem; font-size: .84rem; color: var(--ink); line-height: 1.3; }
+.mmap .sig small { color: var(--muted); font-size: .74rem; }
+.mmap .sig svg { flex-shrink: 0; }
+@media (max-width: 575.98px) {
+  .mmap .mhead { display: none; }
+  .mmap .mrow { grid-template-columns: 1fr; gap: .4rem; }
+}

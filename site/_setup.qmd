@@ -23,7 +23,9 @@ last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
 d_budget = M["at_b_budget"]["D"]
 d_cost = next(c for c in M["methods"]["D"]["checkpoints"] if c["step"] == M["methods"]["D"]["selected"])["gpu_hours"]
 b_cost = next(c for c in M["methods"]["B"]["checkpoints"] if c["step"] == M["methods"]["B"]["selected"])["gpu_hours"]
+bg_cost = next(c for c in M["methods"]["Bg"]["checkpoints"] if c["step"] == M["methods"]["Bg"]["selected"])["gpu_hours"]
 b_clean = M["methods"]["B"]["official"]["test-clean"]["exact"]
+bt = next(c for c in M["claims"] if (c["a"], c["b"], c["eval"]) == ("B", "raw 2B", "test-clean"))
 tie_gap = max(abs(M["methods"][k]["official"]["test-clean"]["exact"] - b_clean) for k in ("C", "D"))
 
 
@@ -56,25 +58,52 @@ def badge(key: str) -> Markdown:
 
 
 def table(keys: list[str], baselines: bool = False) -> HTML:
-    """The results table for `keys`, each at its selected checkpoint; baselines on top if asked."""
+    """The results table for `keys`, each at its selected checkpoint, grouped by whether its
+    training reads gold; the two untrained models on top if asked."""
     cols = ["Validation", "Test", "Test-clean", "BFCL"]
-    head = "".join(f"<th>{c}</th>" for c in ["Method", "Labels", "Step", "GPU-h", *cols])
+    head = "".join(f"<th>{c}</th>" for c in ["Method", "Step", "GPU-h", *cols])
     rows = []
     if baselines:
+        rows.append('<tr class="group"><td colspan="7">No training</td></tr>')
         for who, what in (("raw 0.8B", "the student, untrained"), ("raw 2B", "the teacher")):
             scores = [story.score(who, s) for s in ("validation", "test", "test-clean", "bfcl")]
-            cells = [f'<span title="{what}">{who}</span>', "", "", "0", *scores]
+            cells = [f'{who}<span class="mname">{what}</span>', "", "0", *scores]
             rows.append('<tr class="baseline">' + _cells(cells) + "</tr>")
-    for k in keys:
-        f = story.facts(k)
-        cells = [badge_html(k, f["name"]), f["labels"], f["step"], f["gpu_hours"],
-                 f["validation"], f["test"], f["test_clean"], f["bfcl"]]
-        cls = ' class="headline"' if k == HEADLINE else ""
-        rows.append(f"<tr{cls}>" + _cells(cells) + "</tr>")
+    groups = [("No labels", [k for k in keys if story.facts(k)["labels"] == "no"]),
+              ("Uses labels", [k for k in keys if story.facts(k)["labels"] == "yes"])]
+    for group, members in groups:
+        if baselines and members:
+            rows.append(f'<tr class="group"><td colspan="7">{group}</td></tr>')
+        for k in members:
+            f = story.facts(k)
+            cells = [badge_html(k) + f'<span class="mname">{f["name"]}</span>', f["step"],
+                     f["gpu_hours"], f["validation"], f["test"], f["test_clean"], f["bfcl"]]
+            cls = ' class="headline"' if k == HEADLINE else ""
+            rows.append(f"<tr{cls}>" + _cells(cells) + "</tr>")
     return HTML(
         f'<div class="table-scroll"><table class="results"><thead><tr>{head}</tr></thead>'
         f"<tbody>{''.join(rows)}</tbody></table></div>"
     )
+
+
+def ladder() -> HTML:
+    """The headline on one 50-100% track: the student before, its teacher, the student after
+    distillation, and the same recipe on gold labels."""
+    points = [
+        ("raw 0.8B", "the 0.8B before", "#898781", "down", False),
+        ("raw 2B", "its 2B teacher", "#52514e", "up", False),
+        (HEADLINE, "the 0.8B, distilled", "#2a78d6", "down", False),
+        ("A", "trained on gold labels", "#52514e", "up", True),
+    ]
+    pos = lambda x: f"{(x - 50) * 2:.2f}%"  # noqa: E731
+    parts = ['<div class="track"></div>']
+    parts += [f'<span class="tick" style="left:{pos(t)}">{t}%</span>' for t in (50, 60, 70, 80, 90, 100)]
+    for who, text, colour, side, hollow in points:
+        x = 100 * story._exact(who, "test-clean")
+        left = pos(x)
+        parts.append(f'<span class="pt{" hollow" if hollow else ""}" style="left:{left};--c:{colour}"></span>')
+        parts.append(f'<span class="lab {side}" style="left:{left};--c:{colour}"><b>{x:.1f}%</b><span>{text}</span></span>')
+    return HTML(f'<div class="ladder" role="img" aria-label="Exact match on xLAM test-clean">{"".join(parts)}</div>')
 
 
 def _cells(cells: list[str]) -> str:
