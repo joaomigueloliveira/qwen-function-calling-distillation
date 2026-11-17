@@ -1,3 +1,5 @@
+::: {#fig-bfcl}
+
 ```{ojs}
 bfcl = d3.json(root + "assets/bfcl-along.json")
 Plot.plot({
@@ -18,7 +20,7 @@ Plot.plot({
 })
 ```
 
-::: {.caption}
-Exact match on BFCL, tools never seen in training, at every checkpoint scored there. Rings mark each run's
+On unseen tools, every run is still rising when validation picks its checkpoint. Exact match on
+BFCL, tools never seen in training, at every checkpoint scored there. Rings mark each run's
 selected checkpoint; dashed lines used labels. Hover for each point's 95% interval.
 :::

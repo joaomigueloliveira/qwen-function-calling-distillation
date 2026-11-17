@@ -1,61 +1,27 @@
 # The story site (#22). Build: uv run --group site quarto render site  (preview: ... quarto preview site)
+# One essay (index.qmd), read top to bottom, and two reference pages: every result, every decision.
 project:
   type: website
   output-dir: _site
   pre-render: _prepare.py
-  resources: [assets/*.json]
+  resources: [assets/*.json, essay.js]
 
 website:
   title: "Distilling function calling"
   site-url: https://joaomigueloliveira.github.io/qwen-function-calling-distillation/
   repo-url: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
-  page-navigation: true
-  bread-crumbs: true
   navbar:
-    title: "fc-distill"
-    left:
-      - href: story.qmd
-        text: The story
+    title: "Distilling function calling"
+    right:
+      - href: index.qmd
+        text: The essay
       - href: results.qmd
-        text: Results
+        text: Every result
       - href: decisions/index.qmd
         text: Decisions
-    right:
       - icon: github
         href: https://github.com/joaomigueloliveira/qwen-function-calling-distillation
         aria-label: The repository
-  sidebar:
-    style: docked
-    collapse-level: 1
-    contents:
-      - href: index.qmd
-        text: Home
-      - story.qmd
-      - results.qmd
-      - section: "Concepts"
-        contents:
-          - concepts/distillation.qmd
-          - concepts/targets.qmd
-          - concepts/on-policy.qmd
-      - section: "Data"
-        contents:
-          - data/xlam.qmd
-          - data/audit.qmd
-          - data/bfcl.qmd
-      - section: "Evaluation"
-        contents:
-          - evaluation/metrics.qmd
-          - evaluation/comparing.qmd
-      - section: "Experiments"
-        contents:
-          - experiments/a.qmd
-          - experiments/b.qmd
-          - experiments/c.qmd
-          - experiments/d.qmd
-          - experiments/filters.qmd
-          - experiments/b-then-d.qmd
-      - href: decisions/index.qmd
-        text: Decisions
   page-footer:
     center: "Code, data cards and every decision: [the repository](https://github.com/joaomigueloliveira/qwen-function-calling-distillation). Every number on this site is computed from its results/ and data/ when the site builds."
 
@@ -68,9 +34,16 @@ format:
     theme: cosmo
     css: styles.css
     toc: true
-    toc-location: right
-    toc-title: "On this page"
+    toc-location: left
+    toc-title: "Contents"
+    toc-depth: 2
     include-in-header: _fonts.html
     reference-location: margin
+    citation-location: margin
+    fig-cap-location: bottom
+    tbl-cap-location: bottom
+    crossref:
+      fig-title: Figure
+      tbl-title: Table
     smooth-scroll: true
     link-external-newwindow: true
