@@ -1,7 +1,10 @@
 # The details behind the README
 
 Until #98 the README held every finding with its counts, the scorer's rules and the limitations in
-full. The README is now a summary; this page keeps the rest as it was written, so nothing is lost.
+full. The README is now a summary; this page keeps the rest as it was written: the scorer's rules, the
+findings claim by claim, the limitations in full and the baseline backup. The results table and
+figure live on in [`results/methods.md`](../../results/methods.md), the commands in
+[`REPRODUCE.md`](../REPRODUCE.md).
 The numbers are as of `results/methods.json` on 2026-11-17; `results/` stays the source of truth,
 and [the essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/) tells the
 same story with every number computed at build time.

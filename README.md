@@ -35,7 +35,7 @@ Holm-adjusted over all 25 claims.
    [`methods.md`](results/methods.md)
 2. **Soft targets and on-policy learning tie it on xLAM.** Logit distillation (C, 82.5%) and
    on-policy distillation (D, 83.3%) can't be separated from B, nor can grounded B (82.9%), B on a
-   label-free filter of the teacher's answers. So the simplest is the headline.
+   label-free filter of the teacher's answers, which trails B under lenient exact. So the simplest is the headline.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#the-label-free-methods-tie-so-the-simplest-is-the-headline) ·
    [`methods.md`](results/methods.md) · [ADR 0009](docs/adr/0009-selection-stays-methods-compared-on-test-clean.md)
 3. **Labels still buy a lot.** The same recipe on gold answers (A) reaches 93.2%, partly by learning
@@ -68,8 +68,8 @@ Holm-adjusted over all 25 claims.
 
 ## Results
 
-Strict exact match, each method at the checkpoint validation chose. GPU-hours count everything on
-the one card, the teacher's passes included. Intervals, every checkpoint and every paired test:
+Strict exact match, each method at the checkpoint validation chose. GPU-hours count training and
+the teacher's passes on the one card; scoring checkpoints on validation isn't counted. Intervals, every checkpoint and every paired test:
 [`results/methods.md`](results/methods.md); baselines: [`results/baselines.md`](results/baselines.md).
 
 | Model | Uses labels | GPU-h | Test-clean | BFCL |
@@ -104,7 +104,8 @@ pick on test-clean, with its 95% interval; hollow markers used labels.* Training
 - **Test-clean:** test without the labels the audit found wrong or ambiguous. Test itself is never
   edited ([ADR 0002](docs/adr/0002-test-labels-never-edited.md)).
 - **BFCL:** 1,000 non-live single-turn rows, tools the student never saw ([notes](docs/bfcl.md)).
-- **Selection:** checkpoints are chosen on validation; test is run once, on the pick.
+- **Selection:** checkpoints are chosen on validation; test is run once, on the pick (and on D at
+  B's budget).
 
 ## Limitations
 

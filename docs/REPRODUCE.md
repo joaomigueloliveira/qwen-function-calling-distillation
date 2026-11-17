@@ -10,8 +10,13 @@ measured cost of each step on that card.
 ```bash
 uv sync --extra inference --extra train --group site   # vLLM, TRL/PEFT and Quarto
 uv run --no-sync hf auth login                         # after accepting xLAM's terms on the Hub
-uv run --no-sync wandb login                           # optional: add --wandb to any run below
+uv run --no-sync wandb login                           # required for the method runs, see below
+export WANDB_ENTITY=<you> WANDB_PROJECT=<your project>   # defaults point at the maintainer's
 ```
+
+Weights & Biases is optional for evaluating a Hub model, but not for the methods: `fc-eval --adapter`
+reads each checkpoint's GPU-hours back from its training run's W&B history, so every training run
+below is launched with `--wandb`, as the committed runs were.
 
 Run everything with `--no-sync`: plain `uv run` or `uv sync` re-syncs the environment to the CPU
 tools and uninstalls vLLM. Outputs go to `runs/`, which is gitignored; in this repo it is a symlink to
@@ -77,7 +82,9 @@ uv run --no-sync fc-audit build     # the test-clean ids, into data/splits.json
 uv run --no-sync fc-report          # results/baselines.{json,md}
 ```
 
-Test-clean is scored from the test run, restricted to its ids. The audit's verdicts are committed in
+Test-clean is scored from the test run, restricted to its ids; a separate `--split test-clean` run
+of the same model can differ by up to 3 rows (batch nondeterminism in vLLM), so the reported numbers
+always come from the test run. The audit's verdicts are committed in
 `data/audit/test_labels.csv` ([ADR 0002](adr/0002-test-labels-never-edited.md)).
 
 ## 3. The teacher's answers (B, C and their variants train on them)
@@ -95,14 +102,14 @@ the trainers' defaults; the SFT commands add length grouping and the checkpoint 
 
 | Method | Command | Pick | GPU-h |
 |---|---|---:|---:|
-| A, SFT on gold labels | `uv run --no-sync fc-sft --group-by-length --save-steps 500` | 3411 | 3.8 |
-| B, SFT on teacher outputs | `uv run --no-sync fc-sft --targets teacher --teacher-run runs/eval-train-Qwen_Qwen3.5-2B --group-by-length --save-steps 500` | 1500 | 3.1 |
+| A, SFT on gold labels | `uv run --no-sync fc-sft --group-by-length --save-steps 500 --wandb` | 3411 | 3.8 |
+| B, SFT on teacher outputs | `uv run --no-sync fc-sft --targets teacher --teacher-run runs/eval-train-Qwen_Qwen3.5-2B --group-by-length --save-steps 500 --wandb` | 1500 | 3.1 |
 | Filtered B | B's command `--filter lenient` | 1000 | 2.5 |
 | Grounded B | B's command `--filter grounded` | 1500 | 3.0 |
-| C, logit distillation | `uv run --no-sync fc-sft --targets teacher-topk --teacher-run runs/eval-train-Qwen_Qwen3.5-2B --teacher-topk runs/topk-20-eval-train-Qwen_Qwen3.5-2B --group-by-length --save-steps 500` | 1500 | 4.7 |
+| C, logit distillation | `uv run --no-sync fc-sft --targets teacher-topk --teacher-run runs/eval-train-Qwen_Qwen3.5-2B --teacher-topk runs/topk-20-eval-train-Qwen_Qwen3.5-2B --group-by-length --save-steps 500 --wandb` | 1500 | 4.7 |
 | Filtered C | C's command `--filter lenient` | 1000 | 3.6 |
-| D, on-policy distillation | `uv run --no-sync fc-opd --save-steps 500` | 3000 | 13.5 |
-| B then D | `uv run --no-sync fc-opd --init-adapter runs/train-sft-teacher-r16-b4x4-n52424-gl-s0/checkpoint-1500 --lr 5e-5 --save-at 100,200,300,400,500,1000 --stop-at 1000` | 400 | 4.8 |
+| D, on-policy distillation | `uv run --no-sync fc-opd --save-steps 500 --wandb` | 3000 | 13.5 |
+| B then D | `uv run --no-sync fc-opd --init-adapter runs/train-sft-teacher-r16-b4x4-n52424-gl-s0/checkpoint-1500 --lr 5e-5 --save-at 100,200,300,400,500,1000 --stop-at 1000 --wandb` | 400 | 4.8 |
 
 GPU-hours are at the pick and include the teacher's passes each method needs ([ADR 0008](adr/0008-method-d-setup.md)
 for D's accounting). Each run writes its adapter checkpoints and `cost.json` to `runs/train-*`.
@@ -112,15 +119,27 @@ strict exact, ties to the earlier step), and run the pick once on test and BFCL:
 
 ```bash
 RUN=runs/train-sft-teacher-r16-b4x4-n52424-gl-s0     # e.g. B
-for c in $RUN/checkpoint-*; do uv run --no-sync fc-eval --adapter $c --split validation; done
+for c in $RUN/checkpoint-*; do uv run --no-sync fc-eval --adapter $c --split validation --wandb; done
 uv run --no-sync fc-report --methods                  # results/methods.{json,md}: every pick
-uv run --no-sync fc-eval --adapter $RUN/checkpoint-1500 --split test
-uv run --no-sync fc-eval --adapter $RUN/checkpoint-1500 --split bfcl
+uv run --no-sync fc-eval --adapter $RUN/checkpoint-1500 --split test --wandb
+uv run --no-sync fc-eval --adapter $RUN/checkpoint-1500 --split bfcl --wandb
 uv run --no-sync fc-report --methods                  # the official scores and the paired claims
 ```
 
-BFCL along the whole run (B, D, filtered B and filtered C, explanation only) is the same `--split bfcl` on
-every checkpoint ([ADR 0009](adr/0009-selection-stays-methods-compared-on-test-clean.md)).
+Two more evals feed the reported claims:
+
+- **D at B's budget**: D's only checkpoint within B's GPU-hours, step 500, is also run on test and
+  BFCL, for the claims "D@500 against B" ([ADR 0008](adr/0008-method-d-setup.md)):
+  `fc-eval --adapter runs/train-opd-r16-b4x4-n54561-s0/checkpoint-500 --split test --wandb`, then
+  `--split bfcl`.
+- **The adapter check on BFCL**: `fc-eval --adapter` fails if the adapter changes fewer than 25% of
+  32 seeded answers against the base model, to catch an adapter that never loaded. Four BFCL evals
+  ran with `--adapter-min-changed 0.15`, because these adapters change fewer BFCL answers (6 or 7 of
+  32) while loading correctly on every other split (#64, #76): D at steps 3000 and 500, B then D at
+  step 400, filtered B at step 1000. Each summary records the threshold it used.
+
+BFCL along the whole run (B, D, filtered B and filtered C, explanation only) is the same `--split bfcl --wandb`
+on every checkpoint ([ADR 0009](adr/0009-selection-stays-methods-compared-on-test-clean.md)).
 
 ## 5. Serving
 
