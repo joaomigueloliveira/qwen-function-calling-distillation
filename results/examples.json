@@ -1,0 +1,188 @@
+{
+ "about": "Worked examples for the story site (#107), one per category, each the qualifying row with the shortest prompt (ties to the lowest id). Rows from xLAM-60k (Salesforce, CC-BY-4.0) and BFCL (Apache-2.0); answers are each method's selected checkpoint's greedy output, or the untrained 2B's. Built by fc-examples.",
+ "examples": [
+  {
+   "key": "beats-teacher",
+   "split": "test-clean",
+   "id": 282,
+   "query": "What would be the flattened result of the list [[1, [2, 3]], [4, 5], 6]?",
+   "tools": [
+    {
+     "name": "flatten_list",
+     "description": "Flattens a nested list into a single-level list.",
+     "parameters": {
+      "nested_list": {
+       "description": "The nested list to be flattened.",
+       "type": "List"
+      }
+     }
+    }
+   ],
+   "gold": [
+    {
+     "name": "flatten_list",
+     "arguments": {
+      "nested_list": [
+       [
+        1,
+        [
+         2,
+         3
+        ]
+       ],
+       [
+        4,
+        5
+       ],
+       6
+      ]
+     }
+    }
+   ],
+   "answers": [
+    {
+     "model": "B",
+     "prediction": "[{\"name\": \"flatten_list\", \"arguments\": {\"nested_list\": [[1, [2, 3]], [4, 5], 6]}}]",
+     "exact": true
+    },
+    {
+     "model": "raw 2B",
+     "prediction": "[1, 2, 3, 4, 5, 6]",
+     "exact": false
+    }
+   ]
+  },
+  {
+   "key": "unseen-tools",
+   "split": "bfcl",
+   "id": "parallel_7",
+   "query": "Find the factorial of 5,10 and 15.",
+   "tools": [
+    {
+     "name": "math.factorial",
+     "description": "Calculate the factorial of a given positive integer.",
+     "parameters": {
+      "number": {
+       "description": "The number for which factorial needs to be calculated.",
+       "type": "int"
+      }
+     }
+    }
+   ],
+   "gold": [
+    {
+     "math.factorial": {
+      "number": [
+       5
+      ]
+     }
+    },
+    {
+     "math.factorial": {
+      "number": [
+       10
+      ]
+     }
+    },
+    {
+     "math.factorial": {
+      "number": [
+       15
+      ]
+     }
+    }
+   ],
+   "answers": [
+    {
+     "model": "D",
+     "prediction": "[{\"name\": \"math.factorial\", \"arguments\": {\"number\": 5}}, {\"name\": \"math.factorial\", \"arguments\": {\"number\": 10}}, {\"name\": \"math.factorial\", \"arguments\": {\"number\": 15}}]",
+     "exact": true
+    },
+    {
+     "model": "B",
+     "prediction": "[{\"name\": \"math.factorial\", \"arguments\": {\"number\": 510}}, {\"name\": \"math.factorial\", \"arguments\": {\"number\": 15}}]",
+     "exact": false
+    }
+   ]
+  },
+  {
+   "key": "gold-wrong",
+   "split": "test",
+   "id": 29412,
+   "query": "What is the railway period for March 15, 2023 at 18:30 PM UTC?",
+   "tools": [
+    {
+     "name": "get_railway_period_for_utc_date",
+     "description": "Fetch the railway period for a given UTC date provided in milliseconds.",
+     "parameters": {
+      "millis": {
+       "description": "The UTC date in milliseconds since the Unix epoch.",
+       "type": "int",
+       "default": "1654470000000"
+      }
+     }
+    }
+   ],
+   "gold": [
+    {
+     "name": "get_railway_period_for_utc_date",
+     "arguments": {
+      "millis": 1678934400000
+     }
+    }
+   ],
+   "answers": [
+    {
+     "model": "B",
+     "prediction": "[{\"name\": \"get_railway_period_for_utc_date\", \"arguments\": {\"millis\": 1713540000000}}]",
+     "exact": false
+    },
+    {
+     "model": "raw 2B",
+     "prediction": "[{\"name\": \"get_railway_period_for_utc_date\", \"arguments\": {\"millis\": 1675200000000}}]",
+     "exact": false
+    }
+   ],
+   "note": "1678934400000 is 02:40 UTC on March 16, not 18:30 on March 15"
+  },
+  {
+   "key": "fenced",
+   "split": "test-clean",
+   "id": 42907,
+   "query": "Can you help me get the insult with ID 'e89b12d3-a456-4266-5544-0000123e4567'?",
+   "tools": [
+    {
+     "name": "get_specific_insult",
+     "description": "Fetches a specific insult using the provided insult ID and RapidAPI key.",
+     "parameters": {
+      "is_id": {
+       "description": "The UUID for the specific insult to be retrieved.",
+       "type": "str",
+       "default": ""
+      }
+     }
+    }
+   ],
+   "gold": [
+    {
+     "name": "get_specific_insult",
+     "arguments": {
+      "is_id": "e89b12d3-a456-4266-5544-0000123e4567"
+     }
+    }
+   ],
+   "answers": [
+    {
+     "model": "C",
+     "prediction": "```json\n[{\"name\": \"get_specific_insult\", \"arguments\": {\"is_id\": \"e89b12d3-a456-4266-5544-0000123e4567\"}}]\n```",
+     "exact": true
+    },
+    {
+     "model": "B",
+     "prediction": "[{\"name\": \"get_specific_insult\", \"arguments\": {\"is_id\": \"e89b12d3-a456-4266-5544-0000123e4567\"}}]",
+     "exact": true
+    }
+   ]
+  }
+ ]
+}

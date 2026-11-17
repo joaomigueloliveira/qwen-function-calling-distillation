@@ -1,7 +1,8 @@
 // The essay's concept figures, adapted from the maintainer's course notes. Each draws into a
 // container on index.qmd if it is there. Teacher's text and probabilities are violet, the student's
-// teal, everywhere. Only the token explorer shows measurements (assets/forecast.json); the
-// prefix, grading and two-peak figures are illustrations, and say so in their captions.
+// teal, everywhere. The token explorer and the grading strip show measurements (assets/forecast.json,
+// assets/grading.json, written by fc-probe); the prefix and two-peak figures are illustrations, and
+// say so in their captions.
 (function () {
   "use strict";
   var NS = "http://www.w3.org/2000/svg";
@@ -85,13 +86,14 @@
   function tokenExplorer(P) {
     var root = $("w-token");
     if (!root) return;
-    var keys = Object.keys(P.positions).sort(function (a, b) { return a - b; });
-    var notes = {
-      "2": "The key \"name\": both models are sure, and agree. Hard and soft targets are the same, and both losses are near zero.",
-      "19": "After the city, the teacher writes \", and keeps going to days; it gives the closing \"}} a real chance, leaving days at its default. B's loss sees nothing to fix. C's sees that hesitation.",
-      "24": "The value of days: 3, or the tool's default 7, or 5. The teacher hedges and the untrained student is sure of the wrong one. B pushes it all the way to 3; C pushes it toward the teacher's spread."
-    };
+    var q = function (t) { return "“" + t + "”"; };
     var shorten = function (l) { return l.length > 6 ? l.slice(0, 6) + "…" : l; };
+    var top1 = function (k) { return soft(P.positions[k]["2B"], 1).p[0]; };
+    // Every position where the teacher hesitates, and the first where it is sure, in answer order.
+    var all = Object.keys(P.positions).sort(function (a, b) { return a - b; });
+    var unsure = all.filter(function (k) { return top1(k) < 0.95; });
+    var sure = all.filter(function (k) { return top1(k) >= 0.95 && P.positions[k].tok.trim().length > 2; })[0];
+    var keys = unsure.concat(sure ? [sure] : []).sort(function (a, b) { return a - b; });
     var ans = root.querySelector(".tokline"), svg = root.querySelector("svg");
     var press = seg(root.querySelector(".seg"), keys.map(function (k) { return [P.positions[k].tok.trim() || P.positions[k].tok, k]; }), draw);
     function draw(k) {
@@ -102,18 +104,19 @@
         { values: s.p.slice(0, n).concat([s.rest]), color: "var(--student)", name: "student, 0.8B untrained" }
       ], { height: 140, max: 1 });
       ans.innerHTML = "";
-      P.answer_tokens.forEach(function (tok, i) {
-        var sp = h("span", String(i) === k ? "cur" : null, tok);
-        ans.appendChild(sp);
-      });
+      P.answer_tokens.forEach(function (tok, i) { ans.appendChild(h("span", String(i) === k ? "cur" : null, tok)); });
       root.querySelector("[data-o=hard]").textContent = (-Math.log(s.p[y])).toFixed(3);
       root.querySelector("[data-o=soft]").textContent = kl(t, s).toFixed(3);
       var kept = topk(pos["2B"], 1, 20);
       root.querySelector("[data-o=top]").textContent = kept > 0.999 ? "> 99.9%" : pct(kept);
-      root.querySelector(".note").textContent = notes[k] || "";
+      root.querySelector(".note").textContent = t.p[0] >= 0.95
+        ? "The teacher is sure: " + pct(t.p[0]) + " on " + q(t.labels[0].trim()) + ". Hard and soft targets are almost the same here, and so are the two losses."
+        : "The teacher writes " + q(t.labels[0].trim()) + " (" + pct(t.p[0]) + ") but gives " + q(t.labels[1].trim()) + " " + pct(t.p[1]) +
+          ". B's target says " + q(t.labels[0].trim()) + " and nothing else; C's keeps the other alive. The untrained student puts " + pct(s.p[0]) + " on " + q(t.labels[0].trim()) + ".";
       press(k);
     }
-    draw(keys[keys.length - 1]);
+    var start = unsure.slice().sort(function (a, b) { return top1(a) - top1(b); })[0] || keys[0];
+    draw(start);
   }
 
   // 2. Which prefixes does training ever see? An illustration of compounding error.
@@ -145,34 +148,37 @@
     show("off");
   }
 
-  // 3. The teacher grades every token of the student's answer (illustrative probabilities).
-  function grading() {
+  // 3. The teacher grades every token of the student's own answer (assets/grading.json, measured).
+  function grading(G) {
     var root = $("w-grade");
     if (!root) return;
-    var toks = [
-      ['[{"name":', 0.97, 0.98, "Both agree: almost no signal."],
-      [' "weather"', 0.90, 0.95, "Both agree on the right tool."],
-      [', "arguments": {', 0.96, 0.97, "Format: nothing left to teach."],
-      ['"city": "Porto"', 0.85, 0.90, "The right value, nearly free."],
-      [', "units": "C"', 0.55, 0.06, "The query asked for Fahrenheit. The student was fairly sure, the teacher wasn't: a big penalty, on exactly this token."],
-      ['}}]', 0.93, 0.80, "The teacher would rather keep going, so closing here costs a little."]
-    ];
+    root.querySelector(".lead").innerHTML = "";
+    root.querySelector(".lead").append("The untrained 0.8B's answer to ", h("em", null, "“" + G.query + "”"), ". Click a token:");
+    root.querySelector(".gold").textContent = "gold: " + JSON.stringify(G.gold);
+    var toks = G.tokens.map(function (t) { return [t.tok, Math.exp(t.student), Math.exp(t.teacher), t.student - t.teacher, t.teacher_top || []]; });
     var row = root.querySelector(".tokrow");
     var press = seg(row, toks.map(function (t, i) { return [t[0], i]; }), pick);
     row.querySelectorAll("button").forEach(function (b, i) {
-      var k = Math.log(toks[i][1]) - Math.log(toks[i][2]), heat = Math.min(1, Math.abs(k) / 2.3);
-      b.style.background = "color-mix(in srgb, " + (k > 0 ? "var(--bad)" : "var(--good)") + " " + Math.round(6 + 52 * heat) + "%, var(--surface))";
+      var k = toks[i][3], heat = Math.min(1, Math.abs(k) / 2.3);
+      b.style.background = "color-mix(in srgb, " + (k > 0 ? "var(--bad)" : "var(--good)") + " " + Math.round(4 + 56 * heat) + "%, var(--surface))";
     });
     function pick(i) {
       i = +i;
-      var t = toks[i], k = Math.log(t[1]) - Math.log(t[2]);
-      root.querySelector("[data-o=ps]").textContent = t[1].toFixed(2);
-      root.querySelector("[data-o=pt]").textContent = t[2].toFixed(2);
+      var t = toks[i], k = t[3];
+      root.querySelector("[data-o=ps]").textContent = t[1].toFixed(3);
+      root.querySelector("[data-o=pt]").textContent = t[2].toFixed(3);
       root.querySelector("[data-o=k]").textContent = (k >= 0 ? "+" : "") + k.toFixed(2);
-      root.querySelector(".note").textContent = t[3];
+      root.querySelector(".note").textContent = k > 1
+        ? "The student was far surer of this token than the teacher: the loss pushes it down hard."
+        : k > 0.3 ? "The student was surer than the teacher: the loss pushes this token down a little."
+        : k < -0.3 ? "The teacher liked this token more than the student did: the loss pushes it up."
+        : "They agree: almost nothing to learn here.";
+      var alt = t[4][0];
+      if (alt && alt[0] !== t[0]) root.querySelector(".note").textContent += " The teacher would have written \u201c" + alt[0] + "\u201d (" + pct(Math.exp(alt[1])) + ").";
       press(i);
     }
-    pick(4);
+    var worst = toks.reduce(function (m, t, i) { return t[3] > toks[m][3] ? i : m; }, 0);
+    pick(worst);
   }
 
   // 4. Fit one peak to a two-peaked teacher: forward against reverse KL.
@@ -200,11 +206,11 @@
   }
 
   function start() {
-    prefixes(); grading(); twoPeaks();
-    if ($("w-token")) {
-      var base = (document.querySelector('meta[name="quarto:offset"]') || {}).content || "./";
-      fetch(base + "assets/forecast.json").then(function (r) { return r.json(); }).then(tokenExplorer);
-    }
+    prefixes(); twoPeaks();
+    var base = (document.querySelector('meta[name="quarto:offset"]') || {}).content || "./";
+    var load = function (name, draw) { fetch(base + "assets/" + name).then(function (r) { return r.json(); }).then(draw); };
+    if ($("w-token")) load("forecast.json", tokenExplorer);
+    if ($("w-grade")) load("grading.json", grading);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

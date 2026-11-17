@@ -170,3 +170,17 @@ table.results td:first-child { white-space: normal; min-width: 9rem; }
   .mmap .mhead { display: none; }
   .mmap .mrow { grid-template-columns: 1fr; gap: .4rem; }
 }
+
+/* Worked examples: real rows, rendered from results/examples.json */
+.example { border: 1px solid var(--rule); border-radius: 10px; background: #fff; padding: .4rem 1rem; font-family: var(--sans); }
+.ex-row { display: grid; grid-template-columns: 7.5rem 1fr; gap: .8rem; padding: .45rem 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.ex-row:last-child { border-bottom: 0; }
+.ex-k { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.ex-k .m { text-transform: none; letter-spacing: 0; font-size: .8rem; }
+.ex-q { font-family: var(--serif); font-size: .98rem; }
+.example code { background: none; padding: 0; font-size: .76rem; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+.example mark { background: color-mix(in srgb, var(--bad) 22%, transparent); color: var(--ink); padding: 0 1px; border-radius: 2px; }
+.example .ok, .example .no { display: inline-block; font-size: .64rem; font-weight: 600; text-transform: uppercase; padding: 0 .4em; border-radius: 4px; margin-left: .3em; }
+.example .ok { background: color-mix(in srgb, var(--good) 18%, transparent); color: #0f6b47; }
+.example .no { background: color-mix(in srgb, var(--bad) 15%, transparent); color: #a8302f; }
+@media (max-width: 575.98px) { .ex-row { grid-template-columns: 1fr; gap: .2rem; } }

@@ -1,0 +1,49 @@
+::: {#fig-cost}
+
+```{ojs}
+//| echo: false
+costClean = d3.json(root + "assets/cost-accuracy.json")
+```
+
+```{ojs}
+//| echo: false
+{
+  const picks = costClean.data.picks.slice().sort((a, b) => b.exact - a.exact);
+  const base = costClean.data.baselines.filter(b => b.split === "test-clean");
+  const order = picks.map(d => names[d.method]);
+  const h = 56 + 30 * picks.length, w = Math.min(width, 860) - 8;
+  const score = Plot.plot({
+    width: Math.round(w * 0.66), height: h, marginLeft: 92, marginRight: 12, marginBottom: 44,
+    style: {fontSize: "13px"},
+    x: {label: "exact match on test-clean (%) →", domain: [50, 100], grid: true, labelAnchor: "center", labelOffset: 36},
+    y: {label: null, domain: order},
+    marks: [
+      Plot.ruleX(base, {x: d => 100 * d.exact, stroke: "#898781", strokeDasharray: "4,3"}),
+      Plot.text(base, {x: d => 100 * d.exact, frameAnchor: "top", dy: -12, text: d => d.model === "raw 2B" ? "2B" : "0.8B", fill: "#898781"}),
+      Plot.ruleY(picks, {y: d => names[d.method], x1: d => 100 * d.ci[0], x2: d => 100 * d.ci[1], stroke: d => colors[d.method], strokeWidth: 2}),
+      Plot.dot(picks, {y: d => names[d.method], x: d => 100 * d.exact, r: 5.5, stroke: d => colors[d.method], strokeWidth: 2,
+        fill: d => d.labels ? "white" : colors[d.method],
+        tip: true, title: d => `${names[d.method]}${d.labels ? " (uses labels)" : ""}, step ${d.step}\n${(100 * d.exact).toFixed(1)}% [${(100 * d.ci[0]).toFixed(1)}, ${(100 * d.ci[1]).toFixed(1)}]`}),
+    ],
+  });
+  const cost = Plot.plot({
+    width: Math.round(w * 0.34), height: h, marginLeft: 6, marginRight: 40, marginBottom: 44,
+    style: {fontSize: "13px"},
+    x: {label: "GPU-hours →", grid: true, labelAnchor: "center", labelOffset: 36},
+    y: {label: null, domain: order, axis: null},
+    marks: [
+      Plot.barX(picks, {y: d => names[d.method], x: "gpu_hours", fill: d => colors[d.method], fillOpacity: d => d.labels ? 0.35 : 0.85}),
+      Plot.text(picks, {y: d => names[d.method], x: "gpu_hours", text: d => d.gpu_hours.toFixed(1), dx: 4, textAnchor: "start", fill: "#52514e"}),
+      Plot.ruleX([0]),
+    ],
+  });
+  return html`<div style="display:flex;gap:4px;align-items:flex-start">${score}${cost}</div>`;
+}
+```
+
+Every method's selected checkpoint: its score on test-clean with its 95% interval, and everything it
+cost on the one GPU, the teacher's passes included. The label-free methods sit in one band above the
+teacher at very different costs. Only A, trained on gold labels, climbs clear of it; the methods
+that use labels as a filter (hollow, pale bars) sit at the band's top edge. The runs' validation curves are on
+[Every result](results.qmd).
+:::
