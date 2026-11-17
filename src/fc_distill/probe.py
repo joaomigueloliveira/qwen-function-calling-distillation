@@ -163,6 +163,11 @@ def grading(tok: Any, teacher: Any, student: Any, runs_dir: Any) -> dict[str, An
                 "tok": tok.decode([a]),
                 "student": round(float(ls[j, a]), 4),
                 "teacher": round(float(lt[j, a]), 4),
+                # What the teacher would have written instead: its three likeliest tokens.
+                "teacher_top": [
+                    [tok.decode([int(i)]), round(float(lt[j, i]), 4)]
+                    for i in np.argsort(-lt[j])[:3]
+                ],
             }
             for j, a in enumerate(answer)
         ],
@@ -182,14 +187,24 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("data/probe"))
     args = parser.parse_args()
 
-    tok = AutoTokenizer.from_pretrained(TEACHER)
+    from fc_distill.evaluate import read_run
+
+    # The same model revisions the eval runs used, so the graded answer and its context match.
+    rev = {
+        m: read_run(args.runs / eval_dir("test", m))[0]["provenance"]["model_revision"]
+        for m in (TEACHER, STUDENT)
+    }
+    tok = AutoTokenizer.from_pretrained(TEACHER, revision=rev[TEACHER])
     teacher, student = (
-        AutoModelForCausalLM.from_pretrained(name, dtype=torch.bfloat16, device_map="cuda").eval()
+        AutoModelForCausalLM.from_pretrained(
+            name, revision=rev[name], dtype=torch.bfloat16, device_map="cuda"
+        ).eval()
         for name in (TEACHER, STUDENT)
     )
     about = (
         "Measured with transformers by fc-probe (#107): Qwen3.5-2B (teacher, '2B') and the "
-        "untrained Qwen3.5-0.8B (student, '0.8B'), bf16, thinking off, teacher-forced. "
+        "untrained Qwen3.5-0.8B (student, '0.8B'), bf16, thinking off, teacher-forced, at the "
+        f"revisions the eval runs used (2B {rev[TEACHER][:7]}, 0.8B {rev[STUDENT][:7]}). "
     )
     args.out.mkdir(parents=True, exist_ok=True)
     for name, data, what in (
@@ -204,7 +219,8 @@ def main() -> None:
             "grading.json",
             grading(tok, teacher, student, args.runs),
             "The test-clean row the 0.8B gets wrong and the 2B right with the shortest prompt; the "
-            "0.8B's greedy answer from its eval run, and each token's log-probability under both.",
+            "0.8B's greedy answer from its eval run, each token's log-probability under both, "
+            "and the teacher's three likeliest tokens there.",
         ),
     ):
         (args.out / name).write_text(

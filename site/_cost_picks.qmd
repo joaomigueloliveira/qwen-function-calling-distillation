@@ -43,6 +43,7 @@ costClean = d3.json(root + "assets/cost-accuracy.json")
 
 Every method's selected checkpoint: its score on test-clean with its 95% interval, and everything it
 cost on the one GPU, the teacher's passes included. The label-free methods sit in one band above the
-teacher at very different costs; only training on labels (hollow, pale bars) climbs clear of it. The runs' validation curves are on
+teacher at very different costs. Only A, trained on gold labels, climbs clear of it; the methods
+that use labels as a filter (hollow, pale bars) sit at the band's top edge. The runs' validation curves are on
 [Every result](results.qmd).
 :::

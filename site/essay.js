@@ -155,7 +155,7 @@
     root.querySelector(".lead").innerHTML = "";
     root.querySelector(".lead").append("The untrained 0.8B's answer to ", h("em", null, "“" + G.query + "”"), ". Click a token:");
     root.querySelector(".gold").textContent = "gold: " + JSON.stringify(G.gold);
-    var toks = G.tokens.map(function (t) { return [t.tok, Math.exp(t.student), Math.exp(t.teacher), t.student - t.teacher]; });
+    var toks = G.tokens.map(function (t) { return [t.tok, Math.exp(t.student), Math.exp(t.teacher), t.student - t.teacher, t.teacher_top || []]; });
     var row = root.querySelector(".tokrow");
     var press = seg(row, toks.map(function (t, i) { return [t[0], i]; }), pick);
     row.querySelectorAll("button").forEach(function (b, i) {
@@ -173,6 +173,8 @@
         : k > 0.3 ? "The student was surer than the teacher: the loss pushes this token down a little."
         : k < -0.3 ? "The teacher liked this token more than the student did: the loss pushes it up."
         : "They agree: almost nothing to learn here.";
+      var alt = t[4][0];
+      if (alt && alt[0] !== t[0]) root.querySelector(".note").textContent += " The teacher would have written \u201c" + alt[0] + "\u201d (" + pct(Math.exp(alt[1])) + ").";
       press(i);
     }
     var worst = toks.reduce(function (m, t, i) { return t[3] > toks[m][3] ? i : m; }, 0);
