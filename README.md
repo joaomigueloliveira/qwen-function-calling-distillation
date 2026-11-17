@@ -7,6 +7,7 @@
 [![Read the essay](https://img.shields.io/badge/Read_the_essay-2a78d6?style=for-the-badge)](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/)
 [![Every result](https://img.shields.io/badge/Every_result-52514e?style=for-the-badge)](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/results.html)
 [![Decisions](https://img.shields.io/badge/Decisions-52514e?style=for-the-badge)](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/decisions/)
+[![Reproduce](https://img.shields.io/badge/Reproduce-52514e?style=for-the-badge)](docs/REPRODUCE.md)
 [![Training runs](https://img.shields.io/badge/Training_runs-W%26B-ffbe00?style=for-the-badge&logo=weightsandbiases&logoColor=white)](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation)
 
 <a href="https://joaomigueloliveira.github.io/qwen-function-calling-distillation/"><img src="https://joaomigueloliveira.github.io/qwen-function-calling-distillation/assets/og-card.png" alt="Exact match on xLAM test-clean: the 0.8B before 54.8%, its 2B teacher 76.8%, the 0.8B distilled without labels 83.4%, trained on gold labels 93.2%" width="720"></a>
@@ -116,7 +117,7 @@ pick on test-clean, with its 95% interval; hollow markers used labels.* Training
 
 Every finding with its counts, and the limitations in full: [`docs/notes/details.md`](docs/notes/details.md).
 
-## Quickstart
+## Reproduce it
 
 Requires [uv](https://docs.astral.sh/uv/), an NVIDIA GPU, and access to the gated dataset (accept
 its terms on the Hub, then `uv run hf auth login`).
@@ -124,26 +125,26 @@ its terms on the Hub, then `uv run hf auth login`).
 ```bash
 uv sync --extra inference --extra train --group site   # vLLM, the trainers and Quarto
 uv run --no-sync fc-eval --model Qwen/Qwen3.5-0.8B --split test-clean   # any model or adapter
-uv run --no-sync fc-report --methods   # results/methods.{json,md} from the runs
-uv run --no-sync fc-figures            # docs/figures/
-uv run --no-sync quarto preview site   # the essay, every number computed from results/
+uv run --no-sync fc-sft --targets teacher --teacher-run runs/eval-train-Qwen_Qwen3.5-2B \
+  --group-by-length --save-steps 500                   # method B, after the teacher's pass
+uv run --no-sync fc-report --methods                   # results/methods.{json,md} from the runs
+uv run --no-sync quarto preview site                   # the essay
 ```
 
-Each run's training command and flags (`fc-sft`, `fc-opd`, `fc-teacher-topk`) are in its issue,
-linked from [`results/methods.md`](results/methods.md). Weights & Biases logging is off unless
-`--wandb` is passed ([notes](docs/notes/wandb.md)). Development needs no GPU:
-`uv sync` (which drops the GPU extras), `uv run pytest`, `uv run pre-commit run --all-files`.
+**[`docs/REPRODUCE.md`](docs/REPRODUCE.md)** has every experiment's commands in order, from the
+split and the baselines through each method's training and checkpoint evals to serving and the
+site, and the repository structure module by module. Development needs no GPU: `uv sync` (which
+drops the GPU extras), `uv run pytest`, `uv run pre-commit run --all-files`.
 
 ## Layout
 
 ```
-src/fc_distill/   data, splits and scoring; fc-eval; fc-audit; the methods (fc-sft, fc-opd, fc-teacher-topk);
-                  reports and figures (fc-report, fc-figures, fc-examples, fc-probe); serving (fc-serve)
+src/fc_distill/   one module per step: data and splits, the scorer, fc-eval, the methods
+                  (fc-sft, fc-opd, fc-teacher-topk), reports and figures, serving
 site/             the essay (Quarto), built from results/ and data/
 results/          results worth keeping: baselines, methods, label audit, serving, examples
-docs/             dataset card, ADRs, BFCL and W&B notes, figures
+docs/             REPRODUCE.md, dataset card, ADRs, notes, figures
 data/             committed split ids, the audit labels, the measured token probes
-tests/            unit tests, CPU only
 ```
 
 ## License
