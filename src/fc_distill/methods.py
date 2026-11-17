@@ -587,7 +587,8 @@ def render(data: Mapping[str, Any]) -> str:
             "",
             "## README claims",
             "",
-            "Each pairwise comparison the README states, as first / second right on the rows where "
+            "Each pairwise comparison the write-up states (the README, the essay and "
+            "docs/notes/details.md), as first / second right on the rows where "
             "only one is (#68). Strict exact is the headline; Holm adjusts its p-values over the "
             "claims listed. Lenient exact ignores optional arguments passed at their declared "
             "default or null, on either side (BFCL has no lenient score). On test-clean, the last "

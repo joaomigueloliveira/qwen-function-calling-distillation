@@ -151,13 +151,14 @@ against its teacher on test-clean, that is `{python} bt["only_a_right"]` rows fo
 `{python} bt["only_b_right"]` for the teacher. If the two were equally good, those rows would split
 about evenly.
 
-The project makes `{python} len(M["claims"])` such comparisons, all listed in the README, and testing many raises the chance
+The project makes `{python} len(M["claims"])` such comparisons, all listed in
+[results/methods.md]({{< var repo >}}/blob/main/results/methods.md#readme-claims), and testing many raises the chance
 that one looks significant by luck. So every p-value is adjusted over all of them with **Holm's
 method**, and a difference is called significant only after the adjustment. Each claim below
 carries its counts and adjusted p-value in small grey type.
 
 ::: {.column-margin}
-The scorer and its rules: [the README]({{< var repo >}}#task); BFCL's conversion:
+The scorer and its rules: [docs/notes/details.md]({{< var repo >}}/blob/main/docs/notes/details.md#task); BFCL's conversion:
 [docs/bfcl.md]({{< var repo >}}/blob/main/docs/bfcl.md); comparing methods:
 [ADR 0009](decisions/0009-selection-stays-methods-compared-on-test-clean.html).
 :::

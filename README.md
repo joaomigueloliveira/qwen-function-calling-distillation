@@ -9,18 +9,14 @@
 [![Decisions](https://img.shields.io/badge/Decisions-52514e?style=for-the-badge)](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/decisions/)
 [![Training runs](https://img.shields.io/badge/Training_runs-W%26B-ffbe00?style=for-the-badge&logo=weightsandbiases&logoColor=white)](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation)
 
-[![CI](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/actions/workflows/ci.yml/badge.svg)](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/actions/workflows/ci.yml)
-[![Site](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/actions/workflows/site.yml/badge.svg)](https://github.com/joaomigueloliveira/qwen-function-calling-distillation/actions/workflows/site.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-
 <a href="https://joaomigueloliveira.github.io/qwen-function-calling-distillation/"><img src="https://joaomigueloliveira.github.io/qwen-function-calling-distillation/assets/og-card.png" alt="Exact match on xLAM test-clean: the 0.8B before 54.8%, its 2B teacher 76.8%, the 0.8B distilled without labels 83.4%, trained on gold labels 93.2%" width="720"></a>
 
 </div>
 
 **Without a single label, fine-tuning Qwen3.5-0.8B on its 2B teacher's answers takes it from 54.8%
 to 83.4% exact match on xLAM test-clean, past the teacher's 76.8%, in 3.1 GPU-hours on one RTX 3060:
-74% of what training on gold labels gains.** Logit distillation and on-policy distillation tie it on
-xLAM. They differ in cost, and on tools the student never saw.
+74% of what training on gold labels gains, and the 0.8B serves 2.4× faster than the 2B.** Logit
+distillation and on-policy distillation tie it on xLAM, at higher cost.
 
 The question ([ADR 0007](docs/adr/0007-label-free-is-the-main-question.md)): distillation is what
 you reach for when there are queries but no answers, and a model better than the one you want to
@@ -36,26 +32,28 @@ Holm-adjusted over all 25 claims.
    xLAM test-clean, 159 rows against 52 (Holm p < 0.0001).
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#copying-the-teachers-answers) ·
    [`methods.md`](results/methods.md)
-2. **Three kinds of distillation tie on xLAM.** Logit distillation (C, 82.5%), on-policy
-   distillation (D, 83.3%) and a label-free filter (grounded B, 82.9%) can't be separated from B, so
-   the simplest is the headline.
+2. **Soft targets and on-policy learning tie it on xLAM.** Logit distillation (C, 82.5%) and
+   on-policy distillation (D, 83.3%) can't be separated from B, nor can grounded B (82.9%), B on a
+   label-free filter of the teacher's answers. So the simplest is the headline.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#the-label-free-methods-tie-so-the-simplest-is-the-headline) ·
-   [ADR 0009](docs/adr/0009-selection-stays-methods-compared-on-test-clean.md)
+   [`methods.md`](results/methods.md) · [ADR 0009](docs/adr/0009-selection-stays-methods-compared-on-test-clean.md)
 3. **Labels still buy a lot.** The same recipe on gold answers (A) reaches 93.2%, partly by learning
    gold's quirks.
-   [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#copying-the-teachers-answers) ·
+   [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#students-copy-the-teachers-habits-and-some-of-its-mistakes) ·
    [`methods.md`](results/methods.md)
 4. **The student beats its teacher on xLAM, not on new tools.** On BFCL's unseen tools B stays below
    the 2B, 79.1% against 82.7%, though not after Holm.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#the-student-beats-its-teacher-on-xlam-not-on-new-tools) ·
    [`methods.md`](results/methods.md)
 5. **On unseen tools, the picks overstate the differences.** D leads B's selected checkpoint on
-   BFCL (82.5% against 79.1%, Holm p = 0.009) at 4.3× the cost, but B keeps rising after its pick.
-   With one seed, on-policy training can't be told from more training.
+   BFCL (82.5% against 79.1%, Holm p = 0.009), and on xLAM under lenient exact (p = 0.03,
+   unadjusted), at 4.3× the cost. But B keeps rising after its pick: with one seed, on-policy
+   training can't be told from more training.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#on-unseen-tools-the-picks-overstate-the-differences) ·
    [`methods.md`](results/methods.md)
 6. **Students copy the teacher's habits, and some of its mistakes.** C fences 5.5% of its answers in
-   a code block, as the 2B does; B repeats 64 of the 2B's 162 BFCL errors.
+   a code block, as the 2B does; B repeats 64 of the 2B's 162 wrong
+   BFCL answers that parse.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#students-copy-the-teachers-habits-and-some-of-its-mistakes) ·
    [`methods.md`](results/methods.md)
 7. **The gold labels needed an audit.** Of the 2,000 test rows, 88 have a wrong label and 287 an
@@ -63,7 +61,7 @@ Holm-adjusted over all 25 claims.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#when-the-gold-answer-is-the-problem) ·
    [`label-audit.md`](results/label-audit.md)
 8. **The student serves 2.4× faster** than its teacher one request at a time, and 1.9× cheaper
-   batched, in vLLM on the same card.
+   batched, in vLLM on the same card: measured on the untrained 0.8B, which B adds a LoRA to.
    [Essay](https://joaomigueloliveira.github.io/qwen-function-calling-distillation/#the-student-serves-faster) ·
    [`serving.md`](results/serving.md)
 
@@ -93,15 +91,7 @@ the one card, the teacher's passes included. Intervals, every checkpoint and eve
 </picture>
 
 *Left: validation at every checkpoint against GPU-hours; rings mark each run's pick. Right: each
-pick on test-clean, with its 95% interval; hollow markers used labels.* Training curves on W&B:
-[A](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw) ·
-[B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog) ·
-[C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9) ·
-[D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw) ·
-[grounded B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/v1r4ks64) ·
-[filtered B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko) ·
-[filtered C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6) ·
-[B then D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ra29h5ha).
+pick on test-clean, with its 95% interval; hollow markers used labels.* Training curves on W&B: [A](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/hmjki6iw) · [B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/z8e95dog) · [C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/0y6xmmx9) · [D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/9jf723fw) · [grounded B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/v1r4ks64) · [filtered B](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ejigjxko) · [filtered C](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/sflzd7z6) · [B then D](https://forge.coreweave.com/wandb/joaomigueloliveira30/qwen-function-calling-distillation/runs/ra29h5ha).
 
 ## How it's measured
 
@@ -109,7 +99,7 @@ pick on test-clean, with its 95% interval; hollow markers used labels.* Training
   single-turn tool calls. Split into train (54,561), validation (1,000) and test (2,000), grouped
   so no query is in two splits ([dataset card](docs/DATASET.md)).
 - **Score:** strict exact match by rule, no LLM judge; lenient exact beside it, for optional
-  arguments at their default.
+  arguments at their default ([every metric and slice](docs/notes/details.md#task)).
 - **Test-clean:** test without the labels the audit found wrong or ambiguous. Test itself is never
   edited ([ADR 0002](docs/adr/0002-test-labels-never-edited.md)).
 - **BFCL:** 1,000 non-live single-turn rows, tools the student never saw ([notes](docs/bfcl.md)).
@@ -124,28 +114,30 @@ pick on test-clean, with its 95% interval; hollow markers used labels.* Training
 - Next: GRPO, a reward checked against gold, as a stretch goal
   ([ADR 0007](docs/adr/0007-label-free-is-the-main-question.md)).
 
+Every finding with its counts, and the limitations in full: [`docs/notes/details.md`](docs/notes/details.md).
+
 ## Quickstart
 
 Requires [uv](https://docs.astral.sh/uv/), an NVIDIA GPU, and access to the gated dataset (accept
 its terms on the Hub, then `uv run hf auth login`).
 
 ```bash
-uv sync --extra inference --extra train
+uv sync --extra inference --extra train --group site   # vLLM, the trainers and Quarto
 uv run --no-sync fc-eval --model Qwen/Qwen3.5-0.8B --split test-clean   # any model or adapter
-uv run --no-sync fc-report --methods     # results/methods.{json,md} from the runs
-uv run fc-figures                        # docs/figures/
-uv run --group site quarto preview site  # the essay, every number computed from results/
+uv run --no-sync fc-report --methods   # results/methods.{json,md} from the runs
+uv run --no-sync fc-figures            # docs/figures/
+uv run --no-sync quarto preview site   # the essay, every number computed from results/
 ```
 
 Each run's training command and flags (`fc-sft`, `fc-opd`, `fc-teacher-topk`) are in its issue,
 linked from [`results/methods.md`](results/methods.md). Weights & Biases logging is off unless
-`--wandb` is passed ([notes](docs/notes/wandb.md)). Development: `uv sync`, `uv run pytest`,
-`uv run pre-commit run --all-files` (ruff, mypy strict).
+`--wandb` is passed ([notes](docs/notes/wandb.md)). Development needs no GPU:
+`uv sync` (which drops the GPU extras), `uv run pytest`, `uv run pre-commit run --all-files`.
 
 ## Layout
 
 ```
-src/fc_distill/   data, splits and scoring; fc-eval; the methods (fc-sft, fc-opd, fc-teacher-topk);
+src/fc_distill/   data, splits and scoring; fc-eval; fc-audit; the methods (fc-sft, fc-opd, fc-teacher-topk);
                   reports and figures (fc-report, fc-figures, fc-examples, fc-probe); serving (fc-serve)
 site/             the essay (Quarto), built from results/ and data/
 results/          results worth keeping: baselines, methods, label audit, serving, examples
