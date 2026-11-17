@@ -20,7 +20,7 @@ Plot.plot({
 })
 ```
 
-On unseen tools, every run is still rising when validation picks its checkpoint. Exact match on
+On unseen tools, B and filtered B keep rising after validation picks their checkpoints. Exact match on
 BFCL, tools never seen in training, at every checkpoint scored there. Rings mark each run's
 selected checkpoint; dashed lines used labels. Hover for each point's 95% interval.
 :::

@@ -14,8 +14,8 @@ include-after-body:
 ::: {.summary}
 ::: {.claim}
 Trained only on a 2B model's answers, a 0.8B model calls xLAM's tools better than its teacher, in
-`{python} h["gpu_hours"]` GPU-hours on one consumer GPU. Three kinds of distillation get there, and
-can't be told apart.
+`{python} h["gpu_hours"]` GPU-hours on one consumer GPU. Soft targets and on-policy distillation tie
+it on xLAM.
 :::
 
 ```{python}
@@ -25,7 +25,7 @@ ladder()
 1. **Copying the teacher's answers is enough.** Fine-tuning on the 2B's own answers takes the 0.8B
    from `{python} h["before"]` to `{python} h["after"]` exact match on xLAM, past the teacher's
    `{python} h["teacher"]`: `{python} h["share_of_a"]` of what training on gold labels gains.
-2. **Three kinds of distillation tie.** Matching the teacher's probabilities and learning on the
+2. **Three kinds of distillation tie on xLAM.** Matching the teacher's probabilities and learning on the
    student's own answers land within `{python} f"{100 * tie_gap:.1f}"` points of it. They differ in
    cost, and on tools the student never saw.
 3. **Labels still buy a lot**: the same recipe on gold answers reaches `{python} h["with_labels"]`.
@@ -92,7 +92,7 @@ Before any training, the baselines' mistakes looked suspicious. Models of 0.8B, 
 made about the same number of wrong-argument errors, and errors that don't shrink with a model five
 times larger point at the answers, not the models. Is "3% interest" `3` or `0.03`?
 
-So we audited every test row that any baseline got wrong, `{python} n(len(audit))` of the
+So we audited the test rows the baselines got wrong, `{python} n(len(audit))` of the
 `{python} n(splits["test"])`, asking one question: *would a careful person, reading only the query
 and the tool specs, write this gold answer?* The labelling was blind to which model erred.
 
@@ -125,8 +125,8 @@ and compared with gold's.
   default. Gold writes some defaults out and leaves others out, and by the tool spec both are the
   same call.
 - **BFCL**, the Berkeley Function-Calling Leaderboard, is a second test set of
-  `{python} n(M["baselines"]["official"]["raw 0.8B"]["bfcl"]["n"])` rows whose tools never appear in
-  xLAM. xLAM's test asks for new values in tools the student has seen; BFCL tells tool calling apart
+  `{python} n(M["baselines"]["official"]["raw 0.8B"]["bfcl"]["n"])` rows whose tools come from a
+  different source than xLAM's. xLAM's test asks for new values in tools the student has seen; BFCL tells tool calling apart
   from learning xLAM's tools.
 
 Two models are always compared on the same rows. Most rows both get right or both get wrong, so
@@ -135,7 +135,7 @@ against its teacher on test-clean, that is `{python} bt["only_a_right"]` rows fo
 `{python} bt["only_b_right"]` for the teacher. If the two were equally good, those rows would split
 about evenly.
 
-This essay makes `{python} len(M["claims"])` such comparisons, and testing many raises the chance
+The project makes `{python} len(M["claims"])` such comparisons, all listed in the README, and testing many raises the chance
 that one looks significant by luck. So every p-value is adjusted over all of them with **Holm's
 method**, and a difference is called significant only after the adjustment. Each claim below
 carries its counts and adjusted p-value in small grey type.
@@ -184,7 +184,7 @@ fine-tuning on teacher outputs. **A** is the same recipe on xLAM's gold answers.
 
 At each token, the loss is the cross-entropy of the one token written there, $-\log q(y)$: a *hard
 target*. The teacher's answers are far from perfect, agreeing with gold on
-`{python} pct(teacher["variants"]["unfiltered"]["lenient"])` of the training rows, and the student
+`{python} pct(teacher["variants"]["unfiltered"]["lenient"])` of B's training rows under lenient exact, and the student
 copies them, mistakes included.
 
 **Result.** B reaches **`{python} story.score("B")`** on test-clean in
@@ -364,7 +364,7 @@ The teacher is often wrong, so the last experiments train only on its better ans
   the query and loses where they must be worked out.
 - [Filtered C]{.m .m-Cf} is C on filtered B's rows: `{python} story.score("Cf")`.
 - [B then D]{.m .m-BD} runs D's loss on top of B, as Thinking Machines do:
-  `{python} story.score("B→D")`, no better than B
+  `{python} story.score("B→D")`, behind B though not after Holm
   [(`{python} story.claim("B→D", "B", "test-clean")`)]{.stat}.
 
 ::: {.column-margin}
@@ -384,7 +384,8 @@ included.
 
 B, C, D and grounded B can't be separated on test-clean. Where methods tie, the cheaper is published,
 and within 10% of the cheapest, the simpler pipeline. So B is the headline method. That reading of
-the rule was chosen after the results were known: read literally, it names grounded B, 3% cheaper.
+the rule was chosen after the results were known: read literally, it names grounded B,
+`{python} f"{100 * (1 - bg_cost / b_cost):.0f}%"` cheaper.
 
 ::: {.column-margin}
 The rule and its reading:
@@ -394,22 +395,24 @@ The rule and its reading:
 
 ### The student beats its teacher on xLAM, not on new tools
 
-B's lead over the 2B on xLAM isn't format: most of the 2B's answers that fail to parse are a first
-call cut short, and repairing them makes almost none right. Nor is it memorisation: no test-clean
-query appears in train, and B's lead is larger on rows whose tools train never offered. What it is
+Little of B's lead over the 2B on xLAM is format: most of the 2B's answers that fail to parse are a
+first call cut short, and repairing them makes almost none right. Nor is it memorisation: no
+test-clean query appears verbatim in train, and B's lead is larger on rows whose tools train never offered. What it is
 remains open; running the 2B on its own answers would test whether it is self-training.
 
-On BFCL's unseen tools the order flips back: B stays below the 2B, though not after Holm
+On BFCL's unseen tools B doesn't keep its lead: it is below the 2B, though not after Holm
 [(`{python} story.claim("B", "raw 2B", "bfcl")`)]{.stat}, getting argument values wrong on tools it
 never saw.
 
-### On unseen tools, faster, not better
+### On unseen tools, the picks overstate the differences
 
-D's lead over B on BFCL holds at the checkpoints validation chose. Along whole runs, the picture
-changes: B's BFCL keeps rising after its pick, to `{python} pct(last["B"]["bfcl"]["exact"])` at the
-end of its epoch. The same holds for soft targets on clean rows: filtered C leads filtered B at
-their picks [(`{python} story.claim("Cf", "Bf", "bfcl")`)]{.stat}, but filtered B keeps rising,
-and at the end of their epochs the two are not significantly different.
+D's lead over B on BFCL holds at the checkpoints validation chose. Along whole runs it fades: B's
+BFCL keeps rising after its pick, to `{python} pct(last["B"]["bfcl"]["exact"])` at the end of its
+epoch, above D's at the same GPU-hours. With one seed, the data can't tell on-policy training from
+more training. Soft targets on clean rows show the same pattern: filtered C leads filtered B at
+their picks [(`{python} story.claim("Cf", "Bf", "bfcl")`)]{.stat}, and gets there sooner, but
+filtered B keeps rising, and at the end of their epochs the two are not significantly different.
+Faster, not better.
 
 {{< include _bfcl.qmd >}}
 
@@ -419,8 +422,7 @@ D's only checkpoint within B's GPU-hours (step `{python} d_budget["step"]`,
 `{python} f"{d_budget['gpu_hours']:.1f}"` GPU-hours) scores
 `{python} pct(d_budget["official"]["test-clean"]["exact"])` on test-clean, against B's
 `{python} story.score("B")`
-[(`{python} story.claim(f"D@{d_budget['step']}", "B", "test-clean")`)]{.stat}. And D's BFCL rises
-with training too, so with one seed the data can't tell on-policy learning from more training.
+[(`{python} story.claim(f"D@{d_budget['step']}", "B", "test-clean")`)]{.stat}.
 
 ### Students copy the teacher's habits, and some of its mistakes
 
@@ -430,12 +432,13 @@ wrong, B repeats its exact answer on `{python} bfcl_selected("B")["copies_teache
 `{python} bfcl_selected("D")["copies_teacher_errors"]` and C on
 `{python} bfcl_selected("C")["copies_teacher_errors"]`. They copy some of its errors, none most.
 
-Habits travel more reliably. Gold sometimes writes optional arguments out at their default; on the
-`{python} defaults_rows` test-clean rows that turn on it, A gets
-`{python} pct(M["defaults"]["A"]["default_made_explicit"], 0)` right and B
-`{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)`. And soft targets carry the teacher's
-format: C fences `{python} pct(M["formats"]["C"]["fenced"])` of its answers in a code block, as the
-2B does `{python} pct(M["formats"]["raw 2B"]["fenced"])` of the time, and B never.
+Habits travel too. Soft targets carry the teacher's format: C fences
+`{python} pct(M["formats"]["C"]["fenced"])` of its answers in a code block, as the 2B does
+`{python} pct(M["formats"]["raw 2B"]["fenced"])` of the time, and B never. Labels carry gold's: on
+the `{python} defaults_rows` test-clean rows where gold and a model differ only by an optional
+argument written at its default, A gets `{python} pct(M["defaults"]["A"]["default_made_explicit"], 0)`
+right, B `{python} pct(M["defaults"]["B"]["default_made_explicit"], 0)` and the 2B
+`{python} pct(M["defaults"]["raw 2B"]["default_made_explicit"], 0)`.
 
 {{< include _readouts.qmd >}}
 
@@ -464,7 +467,8 @@ Settings and every run: [results/serving.md]({{< var repo >}}/blob/main/results/
 On this task, the simplest distillation is enough. Fine-tuning a 0.8B student on a 2B teacher's
 answers, with no labels at all, beats the teacher on xLAM in `{python} h["gpu_hours"]` GPU-hours,
 and the more sophisticated methods, soft targets and on-policy learning, tie it. Where they differ
-is on tools the student never saw, and there they learn faster, not better. Labels still buy a lot.
+is on tools the student never saw, and there the differences shrink along the runs: with one seed,
+more training explains them as well as the method does. Labels still buy a lot.
 
 The open question is whether reinforcement learning, with a reward checked against gold, adds
 anything on top. GRPO is the next experiment

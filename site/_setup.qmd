@@ -23,6 +23,7 @@ last = {k: M["methods"][k]["checkpoints"][-1] for k in M["methods"]}
 d_budget = M["at_b_budget"]["D"]
 d_cost = next(c for c in M["methods"]["D"]["checkpoints"] if c["step"] == M["methods"]["D"]["selected"])["gpu_hours"]
 b_cost = next(c for c in M["methods"]["B"]["checkpoints"] if c["step"] == M["methods"]["B"]["selected"])["gpu_hours"]
+bg_cost = next(c for c in M["methods"]["Bg"]["checkpoints"] if c["step"] == M["methods"]["Bg"]["selected"])["gpu_hours"]
 b_clean = M["methods"]["B"]["official"]["test-clean"]["exact"]
 bt = next(c for c in M["claims"] if (c["a"], c["b"], c["eval"]) == ("B", "raw 2B", "test-clean"))
 tie_gap = max(abs(M["methods"][k]["official"]["test-clean"]["exact"] - b_clean) for k in ("C", "D"))
